@@ -4,11 +4,10 @@ import { Button, Loader } from '@/components/ui'
 import { useAuth } from '@/context/AuthContext'
 import { useProfileStore } from '@/stores/profileStore'
 import { authService } from '@/services/auth.service'
-import { tokenStorage } from '@/lib/token-storage'
 
 export default function CandidateSettings() {
   const navigate = useNavigate()
-  const { user, clearAuth } = useAuth()
+  const { user, clearAuth, accessToken } = useAuth()
   const { profile, isLoading, fetchMyProfile } = useProfileStore()
 
   useEffect(() => {
@@ -16,7 +15,6 @@ export default function CandidateSettings() {
   }, [fetchMyProfile])
 
   const handleLogout = async () => {
-    const accessToken = tokenStorage.getAccessToken()
     try {
       if (accessToken) {
         await authService.logout(accessToken)

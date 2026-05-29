@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button, Input } from '@/components/ui'
-import { authenticatedApiClient } from '@/lib/authenticated-api-client'
+import { profileService } from '@/services/profile.service'
 
 export default function AISettings() {
   const navigate = useNavigate()
@@ -29,47 +29,44 @@ export default function AISettings() {
       const professional = JSON.parse(sessionStorage.getItem('onboarding_professional') || '{}')
       const external = JSON.parse(sessionStorage.getItem('onboarding_external') || '{}')
 
-      await authenticatedApiClient('/profiles', {
-        method: 'POST',
-        body: {
-          basic: {
-            name: basic.name,
-            title: basic.title,
-            introduction: basic.introduction,
-            aboutMe: basic.aboutMe,
+      await profileService.create({
+        basic: {
+          name: basic.name,
+          title: basic.title,
+          introduction: basic.introduction,
+          aboutMe: basic.aboutMe,
+        },
+        professional: {
+          currentPosition: {
+            title: professional.currentTitle,
+            company: professional.currentCompany,
+            startDate: '',
+            description: '',
           },
-          professional: {
-            currentPosition: {
-              title: professional.currentTitle,
-              company: professional.currentCompany,
-              startDate: '',
-              description: '',
-            },
-            skills: professional.skills ? professional.skills.split(',').map((s: string) => s.trim()) : [],
-            technologies: professional.technologies ? professional.technologies.split(',').map((t: string) => t.trim()) : [],
-            education: [],
-            experience: [],
-            interests: [],
-            achievements: [],
-            certifications: [],
-            awards: [],
-            additionalNotes: '',
-          },
-          external: {
-            linkedin: external.linkedin,
-            github: external.github,
-            twitter: external.twitter,
-            personalWebsite: external.personalWebsite,
-            researchPapers: [],
-            projects: [],
-            blogs: [],
-            otherProfiles: [],
-          },
-          aiSettings: {
-            provider,
-            apiKey: apiKey || undefined,
-            model: model || modelPlaceholders[provider],
-          },
+          skills: professional.skills ? professional.skills.split(',').map((s: string) => s.trim()) : [],
+          technologies: professional.technologies ? professional.technologies.split(',').map((t: string) => t.trim()) : [],
+          education: [],
+          experience: [],
+          interests: [],
+          achievements: [],
+          certifications: [],
+          awards: [],
+          additionalNotes: '',
+        },
+        external: {
+          linkedin: external.linkedin,
+          github: external.github,
+          twitter: external.twitter,
+          personalWebsite: external.personalWebsite,
+          researchPapers: [],
+          projects: [],
+          blogs: [],
+          otherProfiles: [],
+        },
+        aiSettings: {
+          provider,
+          apiKey: apiKey || undefined,
+          model: model || modelPlaceholders[provider],
         },
       })
 

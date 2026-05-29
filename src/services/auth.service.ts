@@ -1,4 +1,4 @@
-import { apiClient } from '../lib/api-client'
+import { ApiClient } from '../lib/api-client'
 import type {
   MessageResponse,
   RegisterPayload,
@@ -9,60 +9,43 @@ import type {
   RefreshTokenPayload,
 } from '../types/auth'
 
-export const authService = {
+class AuthService extends ApiClient {
+  constructor() {
+    super('/auth')
+  }
+
   register(payload: RegisterPayload) {
-    return apiClient<MessageResponse>('/auth/register', {
-      method: 'POST',
-      body: payload,
-    })
-  },
+    return this.post<MessageResponse>('/register', payload)
+  }
 
   verifyEmail(payload: VerifyOtpPayload) {
-    return apiClient<MessageResponse>('/auth/verify-email', {
-      method: 'POST',
-      body: payload,
-    })
-  },
+    return this.post<MessageResponse>('/verify-email', payload)
+  }
 
   resendOtp(payload: SendOtpPayload) {
-    return apiClient<MessageResponse>('/auth/resend-otp', {
-      method: 'POST',
-      body: payload,
-    })
-  },
+    return this.post<MessageResponse>('/resend-otp', payload)
+  }
 
   login(payload: LoginPayload) {
-    return apiClient<TokenResponse>('/auth/login', {
-      method: 'POST',
-      body: payload,
-    })
-  },
+    return this.post<TokenResponse>('/login', payload)
+  }
 
   requestLoginOtp(payload: SendOtpPayload) {
-    return apiClient<MessageResponse>('/auth/login/otp/request', {
-      method: 'POST',
-      body: payload,
-    })
-  },
+    return this.post<MessageResponse>('/login/otp/request', payload)
+  }
 
   loginWithOtp(payload: VerifyOtpPayload) {
-    return apiClient<TokenResponse>('/auth/login/otp', {
-      method: 'POST',
-      body: payload,
-    })
-  },
+    return this.post<TokenResponse>('/login/otp', payload)
+  }
 
   refresh(payload: RefreshTokenPayload) {
-    return apiClient<TokenResponse>('/auth/refresh', {
-      method: 'POST',
-      body: payload,
-    })
-  },
+    return this.post<TokenResponse>('/refresh', payload)
+  }
 
   logout(accessToken: string) {
-    return apiClient<MessageResponse>('/auth/logout', {
-      method: 'POST',
-      token: accessToken,
-    })
-  },
+    // logout needs a raw token override, not the class token
+    return this.rawPost<MessageResponse>('/logout', { token: accessToken })
+  }
 }
+
+export const authService = new AuthService()

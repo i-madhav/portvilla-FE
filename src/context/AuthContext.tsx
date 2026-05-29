@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import type { TokenResponse } from '../types/auth'
 import { tokenStorage } from '../lib/token-storage'
 import { decodeJwt } from '../lib/jwt-decode'
-import { refreshAccessToken } from '../lib/refresh-tokens'
+import { authService } from '../services/auth.service'
 
 interface AuthContextValue {
   accessToken: string | null
@@ -24,13 +24,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const refreshToken = tokenStorage.getRefreshToken()
     if (refreshToken) {
-      refreshAccessToken().then((token) => {
-        if (token) {
-          setAccessToken(token)
-        } else {
-          tokenStorage.clear()
-          setAccessToken(null)
-        }
+      authService.refresh({ refreshToken }).then((tokens) => {
+        tokenStorage.setTokens(tokens)
+        setAccessToken(tokens.accessToken)
+      }).catch(() => {
+        tokenStorage.clear()
+        setAccessToken(null)
       })
     }
   }, [])
