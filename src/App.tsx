@@ -1,8 +1,12 @@
 import { Routes, Route } from 'react-router-dom'
+import { AuthProvider } from '@/context/AuthContext'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
 import LandingPage from '@/routes/LandingPage'
-import Login from '@/routes/auth/Login'
-import Register from '@/routes/auth/Register'
-import VerifyEmail from '@/routes/auth/VerifyEmail'
+import RegisterPage from '@/routes/auth/Register'
+import VerifyEmailPage from '@/routes/auth/VerifyEmail'
+import LoginPage from '@/routes/auth/Login'
+import LoginOtpRequestPage from '@/routes/auth/LoginOtpRequestPage'
+import LoginOtpVerifyPage from '@/routes/auth/LoginOtpVerifyPage'
 import OnboardingLayout from '@/routes/onboarding/OnboardingLayout'
 import BasicInfo from '@/routes/onboarding/steps/BasicInfo'
 import ProfessionalInfo from '@/routes/onboarding/steps/ProfessionalInfo'
@@ -15,22 +19,40 @@ import PortfolioView from '@/routes/portfolio/[username]/PortfolioView'
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/verify-email" element={<VerifyEmail />} />
-      <Route path="/onboarding" element={<OnboardingLayout />}>
-        <Route index element={<BasicInfo />} />
-        <Route path="basic-info" element={<BasicInfo />} />
-        <Route path="professional-info" element={<ProfessionalInfo />} />
-        <Route path="external-sources" element={<ExternalSources />} />
-        <Route path="ai-settings" element={<AISettings />} />
-      </Route>
-      <Route path="/onboarding/complete" element={<OnboardingComplete />} />
-      <Route path="/settings" element={<CandidateSettings />} />
-      <Route path="/edit-profile" element={<EditProfile />} />
-      <Route path="/:username" element={<PortfolioView />} />
-    </Routes>
+    <AuthProvider>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login/otp" element={<LoginOtpRequestPage />} />
+        <Route path="/login/otp/verify" element={<LoginOtpVerifyPage />} />
+        <Route path="/onboarding" element={<OnboardingLayout />}>
+          <Route index element={<BasicInfo />} />
+          <Route path="basic-info" element={<BasicInfo />} />
+          <Route path="professional-info" element={<ProfessionalInfo />} />
+          <Route path="external-sources" element={<ExternalSources />} />
+          <Route path="ai-settings" element={<AISettings />} />
+        </Route>
+        <Route path="/onboarding/complete" element={<OnboardingComplete />} />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <CandidateSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/edit-profile"
+          element={
+            <ProtectedRoute>
+              <EditProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/:username" element={<PortfolioView />} />
+      </Routes>
+    </AuthProvider>
   )
 }

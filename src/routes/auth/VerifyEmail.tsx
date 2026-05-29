@@ -1,49 +1,77 @@
 import { useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Button, Input } from '@/components/ui'
-import api from '@/lib/api'
+import { authService } from '@/services/auth.service'
+import { ApiError } from '@/lib/api-client'
 
-export default function VerifyEmail() {
+export default function VerifyEmailPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const email = (location.state as any)?.email || ''
-  const [token, setToken] = useState('')
+  const email = (location.state as { email?: string })?.email ?? ''
+  const [otp, setOtp] = useState('')
   const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
-  const [verified, setVerified] = useState(false)
+  const [resendCooldown, setResendCooldown] = useState(0)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
-      await api.post('/auth/verify-email', { email, token })
-      setVerified(true)
-      setTimeout(() => navigate('/login'), 2000)
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Verification failed')
+      await authService.verifyEmail({ email, otp })
+      navigate('/login', {
+        state: { message: 'Email verified! You can now log in.' },
+        replace: true,
+      })
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 422) {
+          setError('Invalid or expired code. Try requesting a new one.')
+        } else if (err.status === 409) {
+          // Already verified — redirect to login
+          navigate('/login', {
+            state: { message: 'Email already verified. Log in below.' },
+            replace: true,
+          })
+        } else {
+          setError(err.message)
+        }
+      } else {
+        setError('Verification failed.')
+      }
     } finally {
       setLoading(false)
     }
   }
 
   const handleResend = async () => {
+    if (resendCooldown > 0) return
+    setError('')
+    setMessage('')
     try {
-      await api.post('/auth/resend-verification', { email })
-    } catch {
-      // silent
+      await authService.resendOtp({ email })
+      setMessage('A new code has been sent to your email.')
+      setResendCooldown(60)
+      const timer = setInterval(() => {
+        setResendCooldown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer)
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        navigate('/login', {
+          state: { message: 'Email already verified. Log in below.' },
+          replace: true,
+        })
+      } else {
+        setError(err instanceof ApiError ? err.message : 'Could not resend code.')
+      }
     }
-  }
-
-  if (verified) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-950 px-4">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-green-400">Email Verified!</h1>
-          <p className="mt-2 text-gray-400">Redirecting to login...</p>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -52,34 +80,50 @@ export default function VerifyEmail() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white">Verify your email</h1>
           <p className="mt-1 text-sm text-gray-400">
-            Enter the verification code sent to {email || 'your email'}
+            Enter the 6-digit code sent to <span className="text-indigo-400">{email}</span>
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleVerify} className="space-y-4">
+          {message && (
+            <div className="rounded-lg bg-green-900/50 px-4 py-2 text-sm text-green-300">
+              {message}
+            </div>
+          )}
           {error && (
-            <div className="rounded-lg bg-red-900/50 px-4 py-2 text-sm text-red-300">
+            <div className="rounded-lg bg-red-900/50 px-4 py-2 text-sm text-red-300" role="alert">
               {error}
             </div>
           )}
           <Input
             label="Verification Code"
-            value={token}
-            onChange={(e) => setToken(e.target.value)}
-            placeholder="Enter your code"
+            inputMode="numeric"
+            maxLength={6}
+            value={otp}
+            onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+            placeholder="000000"
             required
           />
-          <Button type="submit" className="w-full" isLoading={loading}>
+          <Button
+            type="submit"
+            className="w-full"
+            isLoading={loading}
+            disabled={otp.length !== 6}
+          >
             Verify Email
           </Button>
         </form>
 
         <div className="text-center">
           <button
+            type="button"
             onClick={handleResend}
-            className="text-sm text-indigo-400 hover:text-indigo-300"
+            disabled={resendCooldown > 0}
+            className="text-sm text-indigo-400 hover:text-indigo-300 disabled:text-gray-500 disabled:cursor-not-allowed"
           >
-            Resend code
+            {resendCooldown > 0
+              ? `Resend in ${resendCooldown}s`
+              : 'Resend code'}
           </button>
         </div>
       </div>

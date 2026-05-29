@@ -1,29 +1,53 @@
 import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button, Loader } from '@/components/ui'
-import { useAuthStore } from '@/stores/authStore'
+import { useAuth } from '@/context/AuthContext'
 import { useProfileStore } from '@/stores/profileStore'
+import { authService } from '@/services/auth.service'
+import { tokenStorage } from '@/lib/token-storage'
 
 export default function CandidateSettings() {
   const navigate = useNavigate()
-  const { user, logout } = useAuthStore()
+  const { user, clearAuth } = useAuth()
   const { profile, isLoading, fetchMyProfile } = useProfileStore()
 
   useEffect(() => {
     fetchMyProfile()
   }, [fetchMyProfile])
 
-  const shareUrl = profile ? `${window.location.origin}/${profile.username}` : ''
+  const handleLogout = async () => {
+    const accessToken = tokenStorage.getAccessToken()
+    try {
+      if (accessToken) {
+        await authService.logout(accessToken)
+      }
+    } catch {
+      // Clear locally even if API call fails
+    } finally {
+      clearAuth()
+      navigate('/login', { replace: true })
+    }
+  }
+
+  const shareUrl = profile
+    ? `${window.location.protocol}//${window.location.host}/${profile.username}`
+    : ''
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <nav className="flex items-center justify-between border-b border-gray-800 px-6 py-4">
         <span className="text-lg font-bold text-indigo-400">PortVilla</span>
         <div className="flex items-center gap-4">
-          <Link to={profile ? `/${profile.username}` : '#'} className="text-sm text-gray-400 hover:text-white">
+          {user && (
+            <span className="text-sm text-gray-400">{user.email}</span>
+          )}
+          <Link
+            to={profile ? `/${profile.username}` : '#'}
+            className="text-sm text-gray-400 hover:text-white"
+          >
             View Portfolio
           </Link>
-          <Button variant="ghost" size="sm" onClick={() => { logout(); navigate('/') }}>
+          <Button variant="ghost" size="sm" onClick={handleLogout}>
             Log out
           </Button>
         </div>
@@ -63,13 +87,15 @@ export default function CandidateSettings() {
               )}
 
               <div className="mt-4 flex items-center gap-2">
-                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                  profile.visibility === 'public'
-                    ? 'bg-green-900/50 text-green-300'
-                    : profile.visibility === 'protected'
-                    ? 'bg-yellow-900/50 text-yellow-300'
-                    : 'bg-red-900/50 text-red-300'
-                }`}>
+                <span
+                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                    profile.visibility === 'public'
+                      ? 'bg-green-900/50 text-green-300'
+                      : profile.visibility === 'protected'
+                        ? 'bg-yellow-900/50 text-yellow-300'
+                        : 'bg-red-900/50 text-red-300'
+                  }`}
+                >
                   {profile.visibility}
                 </span>
               </div>
@@ -78,12 +104,26 @@ export default function CandidateSettings() {
             {/* Quick Stats */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               {[
-                { label: 'Skills', value: profile.professional.skills.length },
-                { label: 'Technologies', value: profile.professional.technologies.length },
-                { label: 'Experience', value: profile.professional.experience.length },
+                {
+                  label: 'Skills',
+                  value: profile.professional?.skills?.length ?? 0,
+                },
+                {
+                  label: 'Technologies',
+                  value: profile.professional?.technologies?.length ?? 0,
+                },
+                {
+                  label: 'Experience',
+                  value: profile.professional?.experience?.length ?? 0,
+                },
               ].map((stat) => (
-                <div key={stat.label} className="rounded-xl border border-gray-800 bg-gray-900 p-4 text-center">
-                  <p className="text-2xl font-bold text-indigo-400">{stat.value}</p>
+                <div
+                  key={stat.label}
+                  className="rounded-xl border border-gray-800 bg-gray-900 p-4 text-center"
+                >
+                  <p className="text-2xl font-bold text-indigo-400">
+                    {stat.value}
+                  </p>
                   <p className="text-sm text-gray-400">{stat.label}</p>
                 </div>
               ))}

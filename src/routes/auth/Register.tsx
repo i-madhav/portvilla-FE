@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button, Input } from '@/components/ui'
-import { useAuthStore } from '@/stores/authStore'
+import { authService } from '@/services/auth.service'
+import { validatePassword } from '@/lib/password-validation'
+import { ApiError } from '@/lib/api-client'
 
-export default function Register() {
+export default function RegisterPage() {
   const navigate = useNavigate()
-  const register = useAuthStore((s) => s.register)
   const [email, setEmail] = useState('')
-  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
@@ -21,17 +21,27 @@ export default function Register() {
       setError('Passwords do not match')
       return
     }
-    if (username.length < 3 || username.length > 30) {
-      setError('Username must be 3-30 characters')
+
+    const { valid, errors } = validatePassword(password)
+    if (!valid) {
+      setError(errors.join(' '))
       return
     }
 
     setLoading(true)
     try {
-      await register(email, password, username)
+      await authService.register({ email, password })
       navigate('/verify-email', { state: { email } })
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed')
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 409) {
+          setError('An account with this email already exists. Try logging in instead.')
+        } else {
+          setError(err.message)
+        }
+      } else {
+        setError('Registration failed. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
@@ -47,7 +57,7 @@ export default function Register() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="rounded-lg bg-red-900/50 px-4 py-2 text-sm text-red-300">
+            <div className="rounded-lg bg-red-900/50 px-4 py-2 text-sm text-red-300" role="alert">
               {error}
             </div>
           )}
@@ -60,18 +70,11 @@ export default function Register() {
             required
           />
           <Input
-            label="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9-]/g, '').toLowerCase())}
-            placeholder="your-username"
-            required
-          />
-          <Input
             label="Password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="At least 8 characters"
+            placeholder="8+ chars, uppercase, lowercase, digit, special"
             minLength={8}
             required
           />

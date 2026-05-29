@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import api from '@/lib/api'
+import { authenticatedApiClient } from '@/lib/authenticated-api-client'
 
 export interface Profile {
   _id: string
@@ -78,7 +78,7 @@ export const useProfileStore = create<ProfileState>((set) => ({
   fetchMyProfile: async () => {
     set({ isLoading: true })
     try {
-      const { data } = await api.get('/profiles/me')
+      const data = await authenticatedApiClient<Profile>('/profiles/me')
       set({ profile: data, isLoading: false })
     } catch {
       set({ isLoading: false })
@@ -88,7 +88,7 @@ export const useProfileStore = create<ProfileState>((set) => ({
   fetchPublicProfile: async (username) => {
     set({ isLoading: true })
     try {
-      const { data } = await api.get(`/dashboard/${username}`)
+      const data = await authenticatedApiClient<Profile>(`/dashboard/${username}`)
       set({ profile: data, isLoading: false })
     } catch {
       set({ isLoading: false })
@@ -96,12 +96,18 @@ export const useProfileStore = create<ProfileState>((set) => ({
   },
 
   createProfile: async (profileData) => {
-    const { data } = await api.post('/profiles', profileData)
+    const data = await authenticatedApiClient<Profile>('/profiles', {
+      method: 'POST',
+      body: profileData,
+    })
     set({ profile: data })
   },
 
   updateProfile: async (profileData) => {
-    const { data } = await api.patch('/profiles/me', profileData)
+    const data = await authenticatedApiClient<Profile>('/profiles/me', {
+      method: 'PATCH',
+      body: profileData,
+    })
     set({ profile: data })
   },
 }))
