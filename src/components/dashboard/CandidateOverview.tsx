@@ -1,15 +1,28 @@
+import { resolveUploadUrl } from '@/lib/asset-url'
+
 interface CandidateOverviewProps {
   name: string
   title: string
   introduction: string
-  profileImage?: string
+  profileImage?: string | null
 }
 
-export default function CandidateOverview({ name, title, introduction, profileImage }: CandidateOverviewProps) {
+export default function CandidateOverview({
+  name,
+  title,
+  introduction,
+  profileImage,
+}: CandidateOverviewProps) {
+  const imageUrl = resolveUploadUrl(profileImage)
+
   return (
     <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
-      {profileImage ? (
-        <img src={profileImage} alt={name} className="h-24 w-24 rounded-full object-cover border-2 border-indigo-500" />
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt={name}
+          className="h-24 w-24 rounded-full object-cover border-2 border-indigo-500"
+        />
       ) : (
         <div className="flex h-24 w-24 items-center justify-center rounded-full bg-indigo-600/20 border-2 border-indigo-500">
           <span className="text-3xl font-bold text-indigo-400">{name.charAt(0)}</span>

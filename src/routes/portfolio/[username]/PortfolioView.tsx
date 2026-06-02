@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { Loader } from '@/components/ui'
-import { useProfileStore, type Profile } from '@/stores/profileStore'
+import { Loader, ErrorBanner } from '@/components/ui'
+import { useProfileStore } from '@/stores/profileStore'
 import CandidateOverview from '@/components/dashboard/CandidateOverview'
 import SkillsSection from '@/components/dashboard/SkillsSection'
 import TimelineSection from '@/components/dashboard/TimelineSection'
@@ -11,10 +11,7 @@ import SocialLinks from '@/components/dashboard/SocialLinks'
 
 export default function PortfolioView() {
   const { username } = useParams<{ username: string }>()
-  const { profile, isLoading, fetchPublicProfile } = useProfileStore()
-  const [visibilityGate, setVisibilityGate] = useState(true)
-  const [password, setPassword] = useState('')
-  const [passwordError, setPasswordError] = useState('')
+  const { publicProfile, isLoading, error, notFound, fetchPublicProfile } = useProfileStore()
 
   useEffect(() => {
     if (username) {
@@ -30,19 +27,26 @@ export default function PortfolioView() {
     )
   }
 
-  if (!profile) {
+  if (notFound || !publicProfile) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-950">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-white">Portfolio not found</h1>
-          <p className="mt-2 text-gray-400">This portfolio doesn't exist or is private.</p>
+      <div className="flex min-h-screen items-center justify-center bg-gray-950 px-4">
+        <div className="max-w-md text-center">
+          <h1 className="text-2xl font-bold text-white">Portfolio not available</h1>
+          <p className="mt-2 text-gray-400">
+            {error ??
+              'This portfolio does not exist, is private, or the public dashboard is not yet available.'}
+          </p>
+          <p className="mt-4 text-xs text-gray-500">
+            Public portfolio viewing requires the backend dashboard module, which is coming soon.
+          </p>
         </div>
       </div>
     )
   }
 
-  // Visibility gate
-  if (profile.visibility === 'private' && !visibilityGate) {
+  const profile = publicProfile
+
+  if (profile.visibility === 'private') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-950">
         <div className="text-center">
@@ -53,32 +57,15 @@ export default function PortfolioView() {
     )
   }
 
-  if (profile.visibility === 'protected' && !visibilityGate) {
+  if (profile.visibility === 'protected') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-950 px-4">
-        <div className="w-full max-w-sm space-y-4">
-          <h1 className="text-xl font-bold text-white text-center">Password Required</h1>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter portfolio password"
-            className="w-full rounded-lg border border-gray-600 bg-gray-800 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-          {passwordError && <p className="text-sm text-red-400">{passwordError}</p>}
-          <button
-            onClick={async () => {
-              try {
-                // verify password via API
-                setVisibilityGate(true)
-              } catch {
-                setPasswordError('Incorrect password')
-              }
-            }}
-            className="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-          >
-            View Portfolio
-          </button>
+        <div className="max-w-sm space-y-4 text-center">
+          <h1 className="text-xl font-bold text-white">Password Required</h1>
+          <p className="text-sm text-gray-400">
+            Protected portfolio password verification will be available when the backend dashboard
+            module ships.
+          </p>
         </div>
       </div>
     )
@@ -86,12 +73,17 @@ export default function PortfolioView() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
-      {/* Orb placeholder */}
-      <div className="sticky top-0 z-10 flex items-center justify-center bg-gray-950/80 backdrop-blur-sm border-b border-gray-800 py-3">
-        <p className="text-sm text-gray-400">🤖 Ask me anything about {profile.basic.name}</p>
+      <div className="sticky top-0 z-10 flex items-center justify-center border-b border-gray-800 bg-gray-950/80 py-3 backdrop-blur-sm">
+        <p className="text-sm text-gray-400">Ask me anything about {profile.basic.name}</p>
       </div>
 
-      <div className="mx-auto max-w-4xl px-6 py-12 space-y-10">
+      {error && (
+        <div className="mx-auto max-w-4xl px-6 pt-4">
+          <ErrorBanner message={error} />
+        </div>
+      )}
+
+      <div className="mx-auto max-w-4xl space-y-10 px-6 py-12">
         <CandidateOverview
           name={profile.basic.name}
           title={profile.basic.title}
@@ -114,10 +106,10 @@ export default function PortfolioView() {
         <ProjectsSection projects={profile.external.projects} />
 
         <SocialLinks
-          linkedin={profile.external.linkedin}
-          github={profile.external.github}
-          twitter={profile.external.twitter}
-          personalWebsite={profile.external.personalWebsite}
+          linkedin={profile.external.linkedin ?? undefined}
+          github={profile.external.github ?? undefined}
+          twitter={profile.external.twitter ?? undefined}
+          personalWebsite={profile.external.personalWebsite ?? undefined}
         />
       </div>
     </div>

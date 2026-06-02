@@ -1,10 +1,11 @@
-import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 
 const steps = [
   { path: 'basic-info', label: 'Basic Info' },
   { path: 'professional-info', label: 'Professional' },
-  { path: 'external-sources', label: 'External Sources' },
+  { path: 'external-sources', label: 'External' },
   { path: 'ai-settings', label: 'AI Settings' },
+  { path: 'review', label: 'Review' },
 ]
 
 export default function OnboardingLayout() {
@@ -14,7 +15,6 @@ export default function OnboardingLayout() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
-      {/* Progress Bar */}
       <div className="bg-gray-900 px-6 py-4">
         <div className="mx-auto flex max-w-2xl items-center justify-between">
           {steps.map((step, i) => (
@@ -29,7 +29,7 @@ export default function OnboardingLayout() {
                 {i + 1}
               </div>
               <span
-                className={`text-sm hidden sm:block ${
+                className={`hidden text-sm sm:block ${
                   i <= currentIndex ? 'text-white' : 'text-gray-500'
                 }`}
               >
@@ -37,7 +37,7 @@ export default function OnboardingLayout() {
               </span>
               {i < steps.length - 1 && (
                 <div
-                  className={`ml-2 h-px w-8 transition-colors ${
+                  className={`ml-2 h-px w-6 transition-colors sm:w-8 ${
                     i < currentIndex ? 'bg-indigo-600' : 'bg-gray-700'
                   }`}
                 />
@@ -47,7 +47,6 @@ export default function OnboardingLayout() {
         </div>
       </div>
 
-      {/* Content */}
       <div className="mx-auto max-w-2xl px-6 py-12">
         <Outlet />
       </div>

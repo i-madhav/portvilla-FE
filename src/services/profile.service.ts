@@ -1,31 +1,54 @@
 import { AuthenticatedApiClient, ApiClient } from '../lib/api-client'
-import type { Profile } from '../stores/profileStore'
+import type {
+  CreateProfilePayload,
+  ProfileData,
+  PublicProfileData,
+  UpdateProfilePayload,
+} from '../types/profile'
 
+/** Portfolio CRUD — base path `/profiles` (distinct from account `/users/me`). */
 class ProfileService extends AuthenticatedApiClient {
   constructor() {
     super('/profiles')
   }
 
   getMyProfile() {
-    return this.get<Profile>('/me')
+    return this.get<ProfileData>('/me')
   }
 
-  create(data: Partial<Profile>) {
-    return this.post<Profile>('', data)
+  create(payload: CreateProfilePayload) {
+    return this.post<ProfileData>('', payload)
   }
 
-  update(data: Partial<Profile>) {
-    return this.patch<Profile>('/me', data)
+  update(payload: UpdateProfilePayload) {
+    return this.patch<ProfileData>('/me', payload)
+  }
+
+  uploadResume(file: File) {
+    const form = new FormData()
+    form.append('resume', file)
+    return this.uploadFormData<ProfileData>('/me/resume', form)
+  }
+
+  uploadProfileImage(file: File) {
+    const form = new FormData()
+    form.append('profileImage', file)
+    return this.uploadFormData<ProfileData>('/me/profile-image', form)
+  }
+
+  deleteMyProfile() {
+    return this.delete<void>('/me')
   }
 }
 
+/** Pending backend dashboard module — public portfolio by username. */
 class DashboardService extends ApiClient {
   constructor() {
     super('/dashboard')
   }
 
   getPublicProfile(username: string) {
-    return this.get<Profile>(`/${username}`)
+    return this.get<PublicProfileData>(`/${username}`)
   }
 
   verifyPassword(username: string, password: string) {

@@ -1,107 +1,136 @@
 import { create } from 'zustand'
 import { profileService, dashboardService } from '@/services/profile.service'
-
-export interface Profile {
-  _id: string
-  userId: string
-  username: string
-  visibility: 'public' | 'private' | 'protected'
-  basic: {
-    name: string
-    title: string
-    profileImage?: string
-    introduction: string
-    aboutMe: string
-  }
-  professional: {
-    resume?: { url: string; parsedText: string }
-    education: Array<{
-      institution: string
-      degree: string
-      field: string
-      startDate: string
-      endDate: string
-      description: string
-    }>
-    currentPosition?: {
-      title: string
-      company: string
-      startDate: string
-      description: string
-    }
-    experience: Array<{
-      title: string
-      company: string
-      startDate: string
-      endDate: string
-      description: string
-    }>
-    skills: string[]
-    technologies: string[]
-    interests: string[]
-    achievements: string[]
-    certifications: Array<{
-      name: string
-      issuer: string
-      date: string
-      url: string
-    }>
-    awards: string[]
-    additionalNotes: string
-  }
-  external: {
-    linkedin?: string
-    github?: string
-    twitter?: string
-    personalWebsite?: string
-    portfolioWebsite?: string
-    researchPapers: Array<{ title: string; url: string; abstract: string }>
-    projects: Array<{ name: string; url: string; description: string; technologies: string[] }>
-    blogs: string[]
-    otherProfiles: Array<{ platform: string; url: string }>
-  }
-}
+import type {
+  CreateProfilePayload,
+  ProfileData,
+  PublicProfileData,
+  UpdateProfilePayload,
+} from '@/types/profile'
+import { ApiError } from '@/lib/api-client'
+import { getApiErrorMessage } from '@/lib/errors'
 
 interface ProfileState {
-  profile: Profile | null
+  profile: ProfileData | null
+  publicProfile: PublicProfileData | null
   isLoading: boolean
+  error: string | null
+  notFound: boolean
+
+  reset: () => void
+  hydrateProfile: (data: ProfileData) => void
   fetchMyProfile: () => Promise<void>
   fetchPublicProfile: (username: string) => Promise<void>
-  createProfile: (data: Partial<Profile>) => Promise<void>
-  updateProfile: (data: Partial<Profile>) => Promise<void>
+  createProfile: (data: CreateProfilePayload) => Promise<ProfileData>
+  updateProfile: (data: UpdateProfilePayload) => Promise<ProfileData>
+  uploadResume: (file: File) => Promise<void>
+  uploadProfileImage: (file: File) => Promise<void>
+  deleteProfile: () => Promise<void>
+  clearError: () => void
 }
 
 export const useProfileStore = create<ProfileState>((set) => ({
   profile: null,
+  publicProfile: null,
   isLoading: false,
+  error: null,
+  notFound: false,
+
+  reset: () =>
+    set({
+      profile: null,
+      publicProfile: null,
+      isLoading: false,
+      error: null,
+      notFound: false,
+    }),
+
+  hydrateProfile: (data) =>
+    set({
+      profile: data,
+      isLoading: false,
+      error: null,
+      notFound: false,
+    }),
 
   fetchMyProfile: async () => {
-    set({ isLoading: true })
+    set({ isLoading: true, error: null })
     try {
       const data = await profileService.getMyProfile()
-      set({ profile: data, isLoading: false })
-    } catch {
-      set({ isLoading: false })
+      set({ profile: data, isLoading: false, notFound: false })
+    } catch (err) {
+      const notFound = err instanceof ApiError && err.status === 404
+      set({
+        isLoading: false,
+        notFound,
+        error: notFound ? null : getApiErrorMessage(err, 'Failed to load profile.'),
+        ...(notFound ? { profile: null } : {}),
+      })
     }
   },
 
   fetchPublicProfile: async (username) => {
-    set({ isLoading: true })
+    set({ isLoading: true, error: null, notFound: false, publicProfile: null })
     try {
       const data = await dashboardService.getPublicProfile(username)
-      set({ profile: data, isLoading: false })
-    } catch {
-      set({ isLoading: false })
+      set({ publicProfile: data, isLoading: false })
+    } catch (err) {
+      const notFound = err instanceof ApiError && (err.status === 404 || err.status === 403)
+      set({
+        isLoading: false,
+        notFound,
+        error: getApiErrorMessage(
+          err,
+          'This portfolio is not available yet. The public dashboard feature is coming soon.',
+        ),
+        publicProfile: null,
+      })
     }
   },
 
   createProfile: async (profileData) => {
     const data = await profileService.create(profileData)
-    set({ profile: data })
+    set({ profile: data, error: null, notFound: false, isLoading: false })
+    return data
   },
 
   updateProfile: async (profileData) => {
     const data = await profileService.update(profileData)
-    set({ profile: data })
+    set({ profile: data, error: null })
+    return data
   },
+
+  uploadResume: async (file) => {
+    set({ isLoading: true, error: null })
+    try {
+      const data = await profileService.uploadResume(file)
+      set({ profile: data, isLoading: false })
+    } catch (err) {
+      set({ isLoading: false, error: getApiErrorMessage(err, 'Failed to upload resume.') })
+      throw err
+    }
+  },
+
+  uploadProfileImage: async (file) => {
+    set({ isLoading: true, error: null })
+    try {
+      const data = await profileService.uploadProfileImage(file)
+      set({ profile: data, isLoading: false })
+    } catch (err) {
+      set({ isLoading: false, error: getApiErrorMessage(err, 'Failed to upload profile image.') })
+      throw err
+    }
+  },
+
+  deleteProfile: async () => {
+    set({ isLoading: true, error: null })
+    try {
+      await profileService.deleteMyProfile()
+      set({ profile: null, isLoading: false })
+    } catch (err) {
+      set({ isLoading: false, error: getApiErrorMessage(err, 'Failed to delete profile.') })
+      throw err
+    }
+  },
+
+  clearError: () => set({ error: null }),
 }))

@@ -5,7 +5,7 @@ interface TimelineItem {
   title: string
   subtitle: string
   startDate: string
-  endDate: string
+  endDate: string | null
   description: string
 }
 
@@ -15,14 +15,14 @@ interface TimelineSectionProps {
     degree: string
     field: string
     startDate: string
-    endDate: string
+    endDate: string | null
     description: string
   }>
   experience: Array<{
     title: string
     company: string
     startDate: string
-    endDate: string
+    endDate: string | null
     description: string
   }>
 }

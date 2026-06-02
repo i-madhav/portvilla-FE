@@ -1,146 +1,106 @@
-import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
 import { Button, Input } from '@/components/ui'
-import { profileService } from '@/services/profile.service'
+import { step4Schema, type Step4Values } from '@/schemas/profile.schemas'
+import { useOnboardingStore } from '@/stores/onboardingStore'
+import { LlmProvider } from '@/types/profile'
+
+const MODEL_PLACEHOLDERS: Record<LlmProvider, string> = {
+  [LlmProvider.OPENAI]: 'gpt-4o',
+  [LlmProvider.GROQ]: 'mixtral-8x7b-32768',
+  [LlmProvider.OLLAMA]: 'llama3',
+  [LlmProvider.CUSTOM]: 'your-model-name',
+}
 
 export default function AISettings() {
   const navigate = useNavigate()
-  const [provider, setProvider] = useState<'openai' | 'groq' | 'ollama' | 'custom'>('openai')
-  const [apiKey, setApiKey] = useState('')
-  const [model, setModel] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const { step4, setStep4 } = useOnboardingStore()
 
-  const modelPlaceholders: Record<string, string> = {
-    openai: 'gpt-4o',
-    groq: 'mixtral-8x7b-32768',
-    ollama: 'llama3',
-    custom: 'your-model-name',
-  }
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<Step4Values>({
+    resolver: zodResolver(step4Schema),
+    defaultValues: step4 ?? {
+      provider: LlmProvider.OPENAI,
+      apiKey: '',
+      model: '',
+      baseUrl: '',
+    },
+  })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+  const provider = watch('provider')
+  const needsBaseUrl = provider === LlmProvider.OLLAMA || provider === LlmProvider.CUSTOM
+  const needsApiKey = provider !== LlmProvider.OLLAMA
 
-    try {
-      // Gather all onboarding data
-      const basic = JSON.parse(sessionStorage.getItem('onboarding_basic') || '{}')
-      const professional = JSON.parse(sessionStorage.getItem('onboarding_professional') || '{}')
-      const external = JSON.parse(sessionStorage.getItem('onboarding_external') || '{}')
-
-      await profileService.create({
-        basic: {
-          name: basic.name,
-          title: basic.title,
-          introduction: basic.introduction,
-          aboutMe: basic.aboutMe,
-        },
-        professional: {
-          currentPosition: {
-            title: professional.currentTitle,
-            company: professional.currentCompany,
-            startDate: '',
-            description: '',
-          },
-          skills: professional.skills ? professional.skills.split(',').map((s: string) => s.trim()) : [],
-          technologies: professional.technologies ? professional.technologies.split(',').map((t: string) => t.trim()) : [],
-          education: [],
-          experience: [],
-          interests: [],
-          achievements: [],
-          certifications: [],
-          awards: [],
-          additionalNotes: '',
-        },
-        external: {
-          linkedin: external.linkedin,
-          github: external.github,
-          twitter: external.twitter,
-          personalWebsite: external.personalWebsite,
-          researchPapers: [],
-          projects: [],
-          blogs: [],
-          otherProfiles: [],
-        },
-        aiSettings: {
-          provider,
-          apiKey: apiKey || undefined,
-          model: model || modelPlaceholders[provider],
-        },
-      })
-
-      sessionStorage.removeItem('onboarding_basic')
-      sessionStorage.removeItem('onboarding_professional')
-      sessionStorage.removeItem('onboarding_external')
-
-      navigate('/onboarding/complete')
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to save profile')
-    } finally {
-      setLoading(false)
-    }
+  const onSubmit = (data: Step4Values) => {
+    setStep4(data)
+    navigate('/onboarding/review')
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold">AI Configuration</h2>
         <p className="mt-1 text-sm text-gray-400">
-          Configure the AI that will represent you. Your API key stays encrypted.
+          Configure the AI that will represent you. Your API key stays encrypted on the server.
         </p>
       </div>
-
-      {error && (
-        <div className="rounded-lg bg-red-900/50 px-4 py-2 text-sm text-red-300">
-          {error}
-        </div>
-      )}
 
       <div className="space-y-2">
         <label className="block text-sm font-medium text-gray-300">AI Provider</label>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {(['openai', 'groq', 'ollama', 'custom'] as const).map((p) => (
-            <button
+          {Object.values(LlmProvider).map((p) => (
+            <label
               key={p}
-              type="button"
-              onClick={() => setProvider(p)}
-              className={`rounded-lg border px-4 py-3 text-sm font-medium capitalize transition-colors ${
+              className={`cursor-pointer rounded-lg border px-4 py-3 text-center text-sm font-medium capitalize transition-colors ${
                 provider === p
                   ? 'border-indigo-500 bg-indigo-600/20 text-indigo-300'
                   : 'border-gray-600 bg-gray-800 text-gray-400 hover:border-gray-500'
               }`}
             >
+              <input type="radio" value={p} {...register('provider')} className="sr-only" />
               {p}
-            </button>
+            </label>
           ))}
         </div>
       </div>
 
-      {provider !== 'ollama' && (
+      {needsApiKey && (
         <Input
           label="API Key"
           type="password"
-          value={apiKey}
-          onChange={(e) => setApiKey(e.target.value)}
-          placeholder={provider === 'custom' ? 'Your custom API key' : 'sk-...'}
+          {...register('apiKey')}
+          placeholder={provider === LlmProvider.CUSTOM ? 'Your custom API key' : 'sk-...'}
+          error={errors.apiKey?.message}
+        />
+      )}
+
+      {needsBaseUrl && (
+        <Input
+          label="Base URL"
+          type="url"
+          {...register('baseUrl')}
+          placeholder="http://localhost:11434"
+          error={errors.baseUrl?.message}
         />
       )}
 
       <Input
         label="Model (optional)"
-        value={model}
-        onChange={(e) => setModel(e.target.value)}
-        placeholder={modelPlaceholders[provider]}
+        {...register('model')}
+        placeholder={MODEL_PLACEHOLDERS[provider]}
+        error={errors.model?.message}
       />
 
       <div className="flex justify-between">
-        <Button variant="ghost" onClick={() => navigate('/onboarding/external-sources')}>
+        <Button variant="ghost" type="button" onClick={() => navigate('/onboarding/external-sources')}>
           Back
         </Button>
-        <Button type="submit" isLoading={loading}>
-          Complete Setup
-        </Button>
+        <Button type="submit">Next: Review</Button>
       </div>
     </form>
   )

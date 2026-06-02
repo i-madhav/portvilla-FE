@@ -4,6 +4,7 @@ import { Button, Input } from '@/components/ui'
 import { authService } from '@/services/auth.service'
 import { useAuth } from '@/context/AuthContext'
 import { ApiError } from '@/lib/api-client'
+import { resolvePostAuthPath } from '@/lib/post-auth-redirect'
 
 export default function LoginOtpVerifyPage() {
   const navigate = useNavigate()
@@ -21,7 +22,8 @@ export default function LoginOtpVerifyPage() {
     try {
       const tokens = await authService.loginWithOtp({ email, otp })
       setTokens(tokens)
-      navigate('/', { replace: true })
+      const nextPath = await resolvePostAuthPath()
+      navigate(nextPath, { replace: true })
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.status === 422) {

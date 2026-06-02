@@ -1,4 +1,4 @@
-import { ApiClient } from '../lib/api-client'
+import { ApiClient, authenticatedAuthClient } from '../lib/api-client'
 import type {
   MessageResponse,
   RegisterPayload,
@@ -42,9 +42,8 @@ class AuthService extends ApiClient {
     return this.post<TokenResponse>('/refresh', payload)
   }
 
-  logout(accessToken: string) {
-    // logout needs a raw token override, not the class token
-    return this.rawPost<MessageResponse>('/logout', { token: accessToken })
+  logout() {
+    return authenticatedAuthClient.post<MessageResponse>('/logout')
   }
 }
 
