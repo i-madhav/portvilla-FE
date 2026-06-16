@@ -37,15 +37,4 @@ export const CAM_END = 4.0;
 /** Scroll progress at which the end wordmark appears */
 export const END_PROGRESS = 0.9;
 
-/**
- * Scroll progress thresholds for the end-reveal → orb handoff sequence:
- *   1. Text slides up from below (END_TEXT_ENTER)
- *   2. Text holds at center for a moment
- *   3. Text slides down and fades out (END_TEXT_EXIT)
- *   4. Orb becomes visible (ORB_ENTER)
- */
-export const END_TEXT_ENTER = 0.86;
-export const END_TEXT_EXIT  = 0.92;
-export const ORB_ENTER      = 0.94;
-
 export const FONT = "'Jura','Inter',sans-serif";

@@ -1,6 +1,7 @@
 import { IMAGE_SRCS, LAYER_Z } from '../../lib/constants';
 import CameraRig               from './CameraRig';
 import LayerMesh               from './LayerMesh';
+import TunnelTitle             from './TunnelTitle';
 
 interface TunnelSceneProps {
   velocityRef       : React.MutableRefObject<number>;
@@ -20,6 +21,7 @@ export default function TunnelScene({ velocityRef, scrollProgressRef }: TunnelSc
           velocityRef={velocityRef}
         />
       ))}
+      <TunnelTitle scrollProgressRef={scrollProgressRef} />
     </>
   );
 }

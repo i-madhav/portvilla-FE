@@ -41,7 +41,7 @@ export default function TunnelOverlay({
       >
         <Suspense fallback={null}>
           <TunnelScene velocityRef={velocityRef} scrollProgressRef={scrollProgressRef} />
-          <OrbCore visible={orbVisible} orbHandle={orbHandle} docked={orbDocked} />
+          <OrbCore visible={orbVisible} orbHandle={orbHandle} docked={orbDocked} scrollProgressRef={scrollProgressRef} />
         </Suspense>
         <TunnelEffects scrollProgressRef={scrollProgressRef} />
       </Canvas>

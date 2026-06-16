@@ -12,6 +12,7 @@ interface OrbCoreProps {
   visible   : boolean;
   orbHandle : OrbHandle;
   docked    : boolean;
+  scrollProgressRef?: React.MutableRefObject<number>;
 }
 
 /** World-space radius of the main sphere at scale = 1 */
@@ -35,7 +36,7 @@ const DOCK_PADDING = 0.92;
 /* Scale multiplier when docked (orb shrinks to feel like a companion widget) */
 const DOCK_SCALE   = 0.52;
 
-export default function OrbCore({ visible, orbHandle, docked }: OrbCoreProps) {
+export default function OrbCore({ visible, orbHandle, docked, scrollProgressRef }: OrbCoreProps) {
   const groupRef = useRef<THREE.Group>(null);
   const mainMesh = useRef<THREE.Mesh>(null);
 
@@ -102,14 +103,29 @@ export default function OrbCore({ visible, orbHandle, docked }: OrbCoreProps) {
     const targetPos = docked ? dockedPos : CENTER_POS;
     currentPosRef.current.lerp(targetPos, posLerpAlpha);
 
+    /* ── Scroll-driven Y-offset: orb rises from below ground ────────────── */
+    let scrollYOffset = 0;
+    if (scrollProgressRef && !docked) {
+      const p = scrollProgressRef.current;
+      if (p > 0.78 && p < 0.95) {
+        const t = (p - 0.78) / 0.17;
+        const eased = t * t * (3 - 2 * t);
+        scrollYOffset = THREE.MathUtils.lerp(-1.2, 0, eased);
+      } else if (p >= 0.95) {
+        scrollYOffset = 0;
+      } else {
+        scrollYOffset = -1.2;
+      }
+    }
+
     /* ── Apply to group ─────────────────────────────────────────────────── */
     if (groupRef.current) {
       groupRef.current.scale.setScalar(s);
       groupRef.current.position.x = currentPosRef.current.x;
       groupRef.current.position.z = currentPosRef.current.z;
-      /* Float bob only on y, added on top of lerped y */
+      /* Float bob only on y, added on top of lerped y + scroll offset */
       const floatY = docked ? 0 : Math.sin(t * FLOAT_FREQ) * FLOAT_AMP / Math.max(s, 0.001);
-      groupRef.current.position.y = currentPosRef.current.y + floatY;
+      groupRef.current.position.y = currentPosRef.current.y + floatY + scrollYOffset;
     }
 
     /* ── Slow rotation on main mesh for noise-pattern movement ─────────── */
