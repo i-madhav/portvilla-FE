@@ -46,7 +46,6 @@ export default function SceneLoader() {
   const scrollProgressRef = useRef<number>(0);
   const prevProgress      = useRef<number>(0);
   const scrollSpacerRef   = useRef<HTMLDivElement>(null);
-  const sceneLoadedRef    = useRef(false);
 
   const parallaxOffset = useMouseParallax(phase === 'scenery');
 
@@ -133,16 +132,9 @@ export default function SceneLoader() {
           setSceneryOpacity(0);
         }
 
-        /* Mark scene as loaded after first meaningful frame */
-        if (!sceneLoadedRef.current && next > 0.01) {
-          sceneLoadedRef.current = true;
-        }
-
         const shouldShowOrb = next >= END_PROGRESS;
         setOrbVisible(shouldShowOrb);
-
-        /* Show end reveal once scroll is deep enough AND scene has loaded */
-        setEndRevealVisible(shouldShowOrb && sceneLoadedRef.current);
+        setEndRevealVisible(shouldShowOrb);
 
         /* Transition orb to idle when it first appears */
         if (shouldShowOrb && orbHandle.stateRef.current === 'dormant') {

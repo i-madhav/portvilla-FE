@@ -9,7 +9,7 @@ interface SceneryOverlayProps {
 
 export default function SceneryOverlay({ opacity, offset, showScrollHint }: SceneryOverlayProps) {
   return (
-    <div style={{ ...S.fullFixed, zIndex: 2, opacity, overflow: 'hidden' }}>
+    <div style={{ ...S.fullFixed, zIndex: 2, opacity, overflow: 'hidden', transition: 'opacity 0.15s ease-out' }}>
       {IMAGE_SRCS.map((src, i) => {
         const px = offset.x * DEPTHS[i] * window.innerWidth;
         const py = offset.y * DEPTHS[i] * window.innerHeight;

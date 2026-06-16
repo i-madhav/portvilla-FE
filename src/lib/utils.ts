@@ -10,9 +10,4 @@ export function jumpToPageTop() {
   });
 }
 
-/** Safely remove a passive scroll listener. */
-export function removeScrollListener(
-  handler: (e: Event) => void,
-): void {
-  window.removeEventListener('scroll', handler);
-}
+
