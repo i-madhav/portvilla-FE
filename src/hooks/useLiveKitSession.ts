@@ -42,7 +42,7 @@ export function useLiveKitSession(
   const hasConnected   = useRef(false);   /* one-way latch: never reset */
   const analyserRef    = useRef<AnalyserNode | null>(null);
   const rafRef         = useRef<number>(0);
-  const dataArrayRef   = useRef<Uint8Array<ArrayBuffer> | null>(null);
+  const dataArrayRef   = useRef<Uint8Array | null>(null);
   const audioElRef     = useRef<HTMLAudioElement | null>(null);
   const roomRef        = useRef<Room | null>(null);
 
@@ -86,7 +86,7 @@ export function useLiveKitSession(
       analyser.fftSize = 256;
       source.connect(analyser);
       analyserRef.current  = analyser;
-      dataArrayRef.current = new Uint8Array(analyser.frequencyBinCount) as Uint8Array<ArrayBuffer>;
+      dataArrayRef.current = new Uint8Array(analyser.frequencyBinCount);
 
       const tick = () => {
         if (!analyserRef.current || !dataArrayRef.current) return;

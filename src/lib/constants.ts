@@ -19,8 +19,20 @@ export const PLANE_SCALE = 1.0;
 /** Camera starts in front of the closest foreground layer */
 export const CAM_START = 18;
 
-/** Stop just before the opaque background layer */
-export const CAM_END = 1.4;
+/**
+ * Stop at a comfortable distance from the deepest background layer (Z=0).
+ *
+ * Why 4.0 instead of the previous 1.4:
+ *   - At 1.4 the camera flies *past* all scenic layers, right up against the
+ *     background texture (Z=0) — the result is a pixelated, zoomed-in mess by
+ *     the time the orb appears at ~Z=4.4 (progress 0.9).
+ *   - At 4.0 the camera sits ~4 units in front of the background layer:
+ *     enough distance for the texture to render cleanly, while foreground
+ *     layers (Z=5–10) still provide depth context ahead of the camera.
+ *   - The last 10 % of scroll only moves from Z ≈ 4.4 → 4.0, giving a stable
+ *     resting position when the orb + waitlist are visible.
+ */
+export const CAM_END = 4.0;
 
 /** Scroll progress at which the end wordmark appears */
 export const END_PROGRESS = 0.9;

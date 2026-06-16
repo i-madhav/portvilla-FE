@@ -9,6 +9,7 @@ import { useMouseParallax }             from '../hooks/useMouseParallax';
 import { useOrbState }                  from '../hooks/useOrbState';
 import { useLiveKitSession }            from '../hooks/useLiveKitSession';
 import type { UiCommand }               from '../hooks/useLiveKitSession';
+import EndReveal                        from './EndReveal';
 import LoaderOverlay                    from './LoaderOverlay';
 import SceneryOverlay                   from './SceneryOverlay';
 import TunnelOverlay                    from './TunnelOverlay';
@@ -38,12 +39,14 @@ export default function SceneLoader() {
   const [sceneryOpacity,   setSceneryOpacity  ] = useState(0);
   const [tunnelOpacity,    setTunnelOpacity   ] = useState(0);
   const [orbVisible,       setOrbVisible      ] = useState(false);
+  const [endRevealVisible, setEndRevealVisible] = useState(false);
   const [waitlistVisible,  setWaitlistVisible ] = useState(false);
 
   const velocityRef       = useRef<number>(0);
   const scrollProgressRef = useRef<number>(0);
   const prevProgress      = useRef<number>(0);
   const scrollSpacerRef   = useRef<HTMLDivElement>(null);
+  const sceneLoadedRef    = useRef(false);
 
   const parallaxOffset = useMouseParallax(phase === 'scenery');
 
@@ -76,17 +79,21 @@ export default function SceneLoader() {
   /* Phase 2 → 3: first scroll pixel triggers the tunnel */
   useEffect(() => {
     if (phase !== 'scenery') return;
+    let lock = false;
     const onScroll = () => {
-      if (window.scrollY < 1) return;
+      if (lock || window.scrollY < 1) return;
+      lock = true;
+      window.removeEventListener('scroll', onScroll);
       scrollProgressRef.current = 0;
       prevProgress.current = 0;
       velocityRef.current = 0;
       setOrbVisible(false);
       jumpToPageTop();
+      /* Immediately show the tunnel canvas. Its first frame paints
+       * pixel-identical to the 2-D scenery at scroll progress 0, so
+       * there is no visual jump. */
       setPhase('tunnel');
       setTunnelOpacity(1);
-      setTimeout(() => setSceneryOpacity(0), 400);
-      window.removeEventListener('scroll', onScroll);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
@@ -102,6 +109,10 @@ export default function SceneLoader() {
 
     ScrollTrigger.refresh();
 
+    /* Fade scenery opacity over the first 15 % of scroll progress so the
+     * 3-D tunnel has time to render before the 2-D scenery fully disappears. */
+    const SCENERY_FADE_END = 0.15;
+
     const st = ScrollTrigger.create({
       trigger: scrollSpacerRef.current,
       start  : 'top top',
@@ -114,8 +125,24 @@ export default function SceneLoader() {
         prevProgress.current      = next;
         scrollProgressRef.current = next;
 
+        /* Fade out scenery gracefully over first SCENERY_FADE_END */
+        if (next < SCENERY_FADE_END) {
+          const t = next / SCENERY_FADE_END;
+          setSceneryOpacity(THREE.MathUtils.lerp(1, 0, t * t));
+        } else {
+          setSceneryOpacity(0);
+        }
+
+        /* Mark scene as loaded after first meaningful frame */
+        if (!sceneLoadedRef.current && next > 0.01) {
+          sceneLoadedRef.current = true;
+        }
+
         const shouldShowOrb = next >= END_PROGRESS;
         setOrbVisible(shouldShowOrb);
+
+        /* Show end reveal once scroll is deep enough AND scene has loaded */
+        setEndRevealVisible(shouldShowOrb && sceneLoadedRef.current);
 
         /* Transition orb to idle when it first appears */
         if (shouldShowOrb && orbHandle.stateRef.current === 'dormant') {
@@ -152,6 +179,8 @@ export default function SceneLoader() {
           orbHandle={orbHandle}
           orbDocked={waitlistVisible}
         />
+
+        <EndReveal visible={endRevealVisible} />
       </div>
 
       <WaitlistPanel visible={waitlistVisible} />
