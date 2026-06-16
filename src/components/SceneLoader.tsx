@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import * as THREE                       from 'three';
 import gsap                             from 'gsap';
 import { ScrollTrigger }                from 'gsap/ScrollTrigger';
-import { IMAGE_SRCS, END_PROGRESS }     from '../lib/constants';
+import { IMAGE_SRCS, END_TEXT_ENTER, END_TEXT_EXIT, ORB_ENTER } from '../lib/constants';
 import { jumpToPageTop }                from '../lib/utils';
 import { useImagePreloader }            from '../hooks/useImagePreloader';
 import { useMouseParallax }             from '../hooks/useMouseParallax';
@@ -38,8 +38,8 @@ export default function SceneLoader() {
   const [loaderFading,     setLoaderFading    ] = useState(false);
   const [sceneryOpacity,   setSceneryOpacity  ] = useState(0);
   const [tunnelOpacity,    setTunnelOpacity   ] = useState(0);
-  const [orbVisible,       setOrbVisible      ] = useState(false);
-  const [endRevealVisible, setEndRevealVisible] = useState(false);
+  const [endRevealPhase, setEndRevealPhase] = useState<'hidden' | 'entering' | 'visible' | 'exiting'>('hidden');
+  const [orbVisible,     setOrbVisible    ] = useState(false);
   const [waitlistVisible,  setWaitlistVisible ] = useState(false);
 
   const velocityRef       = useRef<number>(0);
@@ -132,9 +132,22 @@ export default function SceneLoader() {
           setSceneryOpacity(0);
         }
 
-        const shouldShowOrb = next >= END_PROGRESS;
+        const shouldShowOrb = next >= ORB_ENTER;
         setOrbVisible(shouldShowOrb);
-        setEndRevealVisible(shouldShowOrb);
+
+        /* End-reveal handoff sequence:
+         *   entering → slides up from below
+         *   visible  → holds at center
+         *   exiting  → slides down & fades out (orb takes over)
+         *   hidden   → orb is fully visible
+         */
+        if (next >= END_TEXT_EXIT) {
+          setEndRevealPhase('exiting');
+        } else if (next >= END_TEXT_ENTER) {
+          setEndRevealPhase('entering');
+        } else {
+          setEndRevealPhase('hidden');
+        }
 
         /* Transition orb to idle when it first appears */
         if (shouldShowOrb && orbHandle.stateRef.current === 'dormant') {
@@ -172,7 +185,7 @@ export default function SceneLoader() {
           orbDocked={waitlistVisible}
         />
 
-        <EndReveal visible={endRevealVisible} />
+        <EndReveal phase={endRevealPhase} />
       </div>
 
       <WaitlistPanel visible={waitlistVisible} />

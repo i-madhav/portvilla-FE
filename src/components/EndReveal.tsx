@@ -1,27 +1,46 @@
 import S from '../lib/styles';
 
 interface EndRevealProps {
-  visible: boolean;
+  phase: 'hidden' | 'entering' | 'visible' | 'exiting';
 }
 
-export default function EndReveal({ visible }: EndRevealProps) {
+export default function EndReveal({ phase }: EndRevealProps) {
+  /* Warm amber / gold palette — matches the cave scene's stone and light */
+  const color = '#d18f4d';
+  const glowColor = 'rgba(209, 143, 77, 0.35)';
+
+  if (phase === 'hidden') return null;
+
+  const isEntering = phase === 'entering';
+  const isExiting  = phase === 'exiting';
+
   return (
     <>
       <div style={{
         ...S.endScrim,
-        opacity   : visible ? 1 : 0,
-        transition: 'opacity 1s ease',
+        opacity   : isEntering || phase === 'visible' ? 1 : 0,
+        transition: 'opacity 0.8s ease',
       }} />
       <div style={{
         ...S.endText,
-        opacity  : visible ? 1 : 0,
-        transform: `translate(-50%, -50%) scale(${visible ? 1 : 0.78})`,
-        transition: 'opacity 0.9s ease, transform 1.1s cubic-bezier(0.16, 1, 0.3, 1)',
+        color,
+        textShadow: `0 0 60px ${glowColor}, 0 0 120px ${glowColor}`,
+        opacity  : isExiting ? 0 : 1,
+        transform: isExiting
+          ? 'translate(-50%, -50%) translateY(-60px) scale(0.92)'
+          : 'translate(-50%, -50%) scale(1)',
+        filter   : isExiting ? 'blur(6px)' : 'blur(0)',
+        transition: isExiting
+          ? 'opacity 0.6s ease, transform 0.7s cubic-bezier(0.55, 0, 1, 0.45), filter 0.6s ease'
+          : 'none',
       }}>
         {'Portvilla'.split('').map((ch, i) => (
           <span key={i} style={{
-            display  : 'inline-block',
-            animation: visible ? `letterFadeIn 0.55s ease ${i * 0.07}s both` : 'none',
+            display     : 'inline-block',
+            opacity     : 0,
+            animation   : isEntering
+              ? `letterSlideUp 0.5s ease ${i * 0.07}s both`
+              : 'none',
           }}>
             {ch}
           </span>

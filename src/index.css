@@ -108,3 +108,31 @@
   0%, 100% { opacity: 0.5; transform: scaleY(1); }
   50%       { opacity: 1;   transform: scaleY(1.15); }
 }
+
+/* Slide up from below, letter by letter */
+@keyframes letterSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(60px);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* Slide down and fade out */
+@keyframes letterSlideDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-60px);
+    filter: blur(6px);
+  }
+}
