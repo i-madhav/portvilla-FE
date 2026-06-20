@@ -2,7 +2,15 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import * as THREE                       from 'three';
 import gsap                             from 'gsap';
 import { ScrollTrigger }                from 'gsap/ScrollTrigger';
-import { IMAGE_SRCS, END_PROGRESS }     from '../lib/constants';
+import {
+  IMAGE_SRCS,
+  ORB_END_Y,
+  ORB_ENTRANCE_EASE,
+  ORB_ENTRANCE_START,
+  ORB_START_Y,
+  orbEntranceLinearT,
+  type OrbEntranceState,
+} from '../lib/constants';
 import { jumpToPageTop }                from '../lib/utils';
 import { useImagePreloader }            from '../hooks/useImagePreloader';
 import { useMouseParallax }             from '../hooks/useMouseParallax';
@@ -27,7 +35,7 @@ type Phase = 'loading' | 'scenery' | 'tunnel';
 const SPACER_HEIGHT: Record<Phase, string> = {
   loading: '100vh',
   scenery: '150vh',
-  tunnel : '700vh',
+  tunnel : '500vh',
 };
 
 export default function SceneLoader() {
@@ -44,6 +52,8 @@ export default function SceneLoader() {
   const scrollProgressRef = useRef<number>(0);
   const prevProgress      = useRef<number>(0);
   const scrollSpacerRef   = useRef<HTMLDivElement>(null);
+
+  const orbEntranceRef = useRef<OrbEntranceState>({ t: 0, y: ORB_START_Y });
 
   const parallaxOffset = useMouseParallax(phase === 'scenery');
 
@@ -81,6 +91,7 @@ export default function SceneLoader() {
       scrollProgressRef.current = 0;
       prevProgress.current = 0;
       velocityRef.current = 0;
+      orbEntranceRef.current = { t: 0, y: ORB_START_Y };
       setOrbVisible(false);
       jumpToPageTop();
       setPhase('tunnel');
@@ -106,7 +117,7 @@ export default function SceneLoader() {
       trigger: scrollSpacerRef.current,
       start  : 'top top',
       end    : 'bottom bottom',
-      scrub  : 0.9,
+      scrub  : 20,
       onUpdate(self) {
         const next = self.progress;
         const dp   = next - prevProgress.current;
@@ -114,7 +125,17 @@ export default function SceneLoader() {
         prevProgress.current      = next;
         scrollProgressRef.current = next;
 
-        const shouldShowOrb = next >= END_PROGRESS;
+        if (next < ORB_ENTRANCE_START) {
+          orbEntranceRef.current = { t: 0, y: ORB_START_Y };
+        } else {
+          const rawT   = orbEntranceLinearT(next);
+          const easeFn = gsap.parseEase(ORB_ENTRANCE_EASE);
+          const easedT = easeFn(rawT);
+          orbEntranceRef.current.t = easedT;
+          orbEntranceRef.current.y = THREE.MathUtils.lerp(ORB_START_Y, ORB_END_Y, easedT);
+        }
+
+        const shouldShowOrb = next >= ORB_ENTRANCE_START;
         setOrbVisible(shouldShowOrb);
 
         /* Transition orb to idle when it first appears */
@@ -151,6 +172,7 @@ export default function SceneLoader() {
           orbVisible={orbVisible}
           orbHandle={orbHandle}
           orbDocked={waitlistVisible}
+          orbEntranceRef={orbEntranceRef}
         />
       </div>
 

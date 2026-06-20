@@ -9,10 +9,11 @@ interface LayerMeshProps {
   textureSrc  : string;
   layerIndex  : number;
   layerZ      : number;
+  layerY      : number;
   velocityRef : React.MutableRefObject<number>;
 }
 
-export default function LayerMesh({ textureSrc, layerIndex, layerZ, velocityRef }: LayerMeshProps) {
+export default function LayerMesh({ textureSrc, layerIndex , layerY, layerZ, velocityRef }: LayerMeshProps) {
   const texture  = useTexture(textureSrc);
   const matRef   = useRef<THREE.ShaderMaterial>(null);
   const meshRef  = useRef<THREE.Mesh>(null);
@@ -51,7 +52,7 @@ export default function LayerMesh({ textureSrc, layerIndex, layerZ, velocityRef 
   });
 
   return (
-    <mesh ref={meshRef} position={[0, 0, layerZ]} renderOrder={layerIndex}>
+    <mesh ref={meshRef} position={[0, layerY, layerZ]} renderOrder={layerIndex}>
       <planeGeometry args={[planeW, planeH]} />
       <shaderMaterial
         ref={matRef}

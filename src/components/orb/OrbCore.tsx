@@ -2,6 +2,7 @@ import { useRef }         from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE          from 'three';
 import type { OrbHandle } from '../../hooks/useOrbState';
+import { ORB_CENTER_Z, ORB_END_Y, ORB_START_Y, type OrbEntranceState } from '../../lib/constants';
 import {
   ORB_MAIN_VERT,  ORB_MAIN_FRAG,
   ORB_INNER_VERT, ORB_INNER_FRAG,
@@ -9,13 +10,14 @@ import {
 } from '../../lib/orbShaders';
 
 interface OrbCoreProps {
-  visible   : boolean;
-  orbHandle : OrbHandle;
-  docked    : boolean;
+  visible         : boolean;
+  orbHandle       : OrbHandle;
+  docked          : boolean;
+  orbEntranceRef  : React.MutableRefObject<OrbEntranceState>;
 }
 
 /** World-space radius of the main sphere at scale = 1 */
-const BASE_SCALE = 0.22;
+const BASE_SCALE = 1;
 
 /** Floating bob amplitude (world units) */
 const FLOAT_AMP  = 0.016;
@@ -29,15 +31,20 @@ function makeUniforms() {
   };
 }
 
-const CENTER_POS  = new THREE.Vector3(0, -0.08, 0.5);
+const CENTER_POS = new THREE.Vector3(0, ORB_END_Y, ORB_CENTER_Z);
 /* Padding from edge in world units — calculated dynamically in useFrame */
 const DOCK_PADDING = 0.92;
 /* Scale multiplier when docked (orb shrinks to feel like a companion widget) */
 const DOCK_SCALE   = 0.52;
 
-export default function OrbCore({ visible, orbHandle, docked }: OrbCoreProps) {
-  const groupRef = useRef<THREE.Group>(null);
-  const mainMesh = useRef<THREE.Mesh>(null);
+/** Eased entranceT threshold at which the orb breaks through in front of img4 */
+const ORB_LAYER_BREAK_T = 0.9;
+
+export default function OrbCore({ visible, orbHandle, docked, orbEntranceRef }: OrbCoreProps) {
+  const groupRef    = useRef<THREE.Group>(null);
+  const mainMesh    = useRef<THREE.Mesh>(null);
+  const haloMesh    = useRef<THREE.Mesh>(null);
+  const innerMesh   = useRef<THREE.Mesh>(null);
 
   const innerMat = useRef<THREE.ShaderMaterial>(null);
   const mainMat  = useRef<THREE.ShaderMaterial>(null);
@@ -48,8 +55,8 @@ export default function OrbCore({ visible, orbHandle, docked }: OrbCoreProps) {
   const currentGlowRef  = useRef(0.52);
   const timeRef         = useRef(0);
 
-  /* Position lerp tracking */
-  const currentPosRef = useRef(CENTER_POS.clone());
+  /* Position lerp tracking — start below frame to match entrance ref */
+  const currentPosRef = useRef(new THREE.Vector3(0, ORB_START_Y, ORB_CENTER_Z));
 
   const { viewport } = useThree();
 
@@ -61,8 +68,10 @@ export default function OrbCore({ visible, orbHandle, docked }: OrbCoreProps) {
     const lerpAlpha     = 1 - Math.pow(0.001, delta * 3.5);
     const posLerpAlpha  = 1 - Math.pow(0.001, delta * 2.8);  /* slightly slower for elegance */
 
-    /* ── Scale: entrance / exit & state transitions ─────────────────────── */
-    const baseTarget  = visible ? orbHandle.targetScaleRef.current : 0;
+    const entranceT = orbEntranceRef.current.t;
+
+    /* ── Scale: full size immediately when visible; position handles the entrance */
+    const baseTarget = visible ? orbHandle.targetScaleRef.current : 0;
     const targetScale = docked ? baseTarget * DOCK_SCALE : baseTarget;
     currentScaleRef.current += (targetScale - currentScaleRef.current) * lerpAlpha;
 
@@ -97,18 +106,31 @@ export default function OrbCore({ visible, orbHandle, docked }: OrbCoreProps) {
     const dockedPos = new THREE.Vector3(
       halfW  - DOCK_PADDING,
       -halfH + DOCK_PADDING,
-      0.5,
+      ORB_CENTER_Z,
     );
-    const targetPos = docked ? dockedPos : CENTER_POS;
+    const offScreen = new THREE.Vector3(0, ORB_START_Y, ORB_CENTER_Z);
+    const targetPos = docked
+      ? dockedPos
+      : visible
+        ? CENTER_POS.clone()
+        : offScreen;
+    if (!docked && visible) {
+      targetPos.y = orbEntranceRef.current.y;
+    }
     currentPosRef.current.lerp(targetPos, posLerpAlpha);
+    if (!docked && visible) {
+      currentPosRef.current.y = orbEntranceRef.current.y;
+    }
 
     /* ── Apply to group ─────────────────────────────────────────────────── */
     if (groupRef.current) {
       groupRef.current.scale.setScalar(s);
       groupRef.current.position.x = currentPosRef.current.x;
       groupRef.current.position.z = currentPosRef.current.z;
-      /* Float bob only on y, added on top of lerped y */
-      const floatY = docked ? 0 : Math.sin(t * FLOAT_FREQ) * FLOAT_AMP / Math.max(s, 0.001);
+      const floatY =
+        docked || entranceT < 1
+          ? 0
+          : Math.sin(t * FLOAT_FREQ) * FLOAT_AMP / Math.max(s, 0.001);
       groupRef.current.position.y = currentPosRef.current.y + floatY;
     }
 
@@ -125,21 +147,30 @@ export default function OrbCore({ visible, orbHandle, docked }: OrbCoreProps) {
       mat.uniforms.uAmplitude.value = amp;
       mat.uniforms.uGlow.value      = glow;
     }
+
+    /* ── RenderOrder: orb rises from behind img4 (layer 3, RO=3), then
+     *    breaks through to the front once 90% of the entrance is complete.
+     *    During entrance: 2.7/2.8/2.9 → behind layers 3-6 (img4–img7)
+     *    After break:     7  / 8  / 9  → in front of all tunnel layers    */
+    const behindLayer = !docked && entranceT < ORB_LAYER_BREAK_T;
+    if (haloMesh.current)  haloMesh.current.renderOrder  = behindLayer ? 2.7 : 7;
+    if (mainMesh.current)  mainMesh.current.renderOrder  = behindLayer ? 2.8 : 8;
+    if (innerMesh.current) innerMesh.current.renderOrder = behindLayer ? 2.9 : 9;
   });
 
   /*
    * Render-order hierarchy (all tunnel layers are 0–6):
-   *   halo  = 7  → soft corona, only visible outside the opaque body
-   *   main  = 8  → OPAQUE polished glass marble (the object you see)
-   *   inner = 9  → additive heart-glow, blooms through the glass when speaking
+   *   During entrance (entranceT < 0.9): orb uses 2.7/2.8/2.9 so it rises
+   *   from behind img4 (layer index 3, renderOrder 3) and all foreground layers.
+   *   After break-through: halo=7, main=8, inner=9 — in front of everything.
    *
-   * All materials: depthTest=false, depthWrite=false so we never clip into
-   * tunnel geometry or each other; ordering is driven purely by renderOrder.
+   * All materials: depthTest=false, depthWrite=false so ordering is purely
+   * by renderOrder; no depth-buffer clipping with tunnel geometry.
    */
   return (
     <group ref={groupRef}>
       {/* Outer atmospheric corona — ripples with traveling waves */}
-      <mesh renderOrder={7}>
+      <mesh ref={haloMesh} renderOrder={2.7}>
         <sphereGeometry args={[1.38, 64, 64]} />
         <shaderMaterial
           ref={haloMat}
@@ -155,7 +186,7 @@ export default function OrbCore({ visible, orbHandle, docked }: OrbCoreProps) {
       </mesh>
 
       {/* Opaque polished glass marble — marbled teal interior + glossy specular */}
-      <mesh ref={mainMesh} renderOrder={8}>
+      <mesh ref={mainMesh} renderOrder={2.8}>
         {/* IcosahedronGeometry: uniform vertex distribution = cleaner noise */}
         <icosahedronGeometry args={[1, 6]} />
         <shaderMaterial
@@ -171,7 +202,7 @@ export default function OrbCore({ visible, orbHandle, docked }: OrbCoreProps) {
       </mesh>
 
       {/* Inner luminous heart — small, blooms through the glass (additive) */}
-      <mesh renderOrder={9}>
+      <mesh ref={innerMesh} renderOrder={2.9}>
         <sphereGeometry args={[0.48, 32, 32]} />
         <shaderMaterial
           ref={innerMat}

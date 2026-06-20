@@ -1,4 +1,4 @@
-import { IMAGE_SRCS, LAYER_Z } from '../../lib/constants';
+import { IMAGE_SRCS, LAYER_Y, LAYER_Z } from '../../lib/constants';
 import CameraRig               from './CameraRig';
 import LayerMesh               from './LayerMesh';
 
@@ -17,6 +17,7 @@ export default function TunnelScene({ velocityRef, scrollProgressRef }: TunnelSc
           textureSrc={src}
           layerIndex={i}
           layerZ={LAYER_Z[i]}
+          layerY={LAYER_Y[i]}
           velocityRef={velocityRef}
         />
       ))}

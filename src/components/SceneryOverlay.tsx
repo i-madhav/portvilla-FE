@@ -1,4 +1,4 @@
-import { IMAGE_SRCS, DEPTHS } from '../lib/constants';
+import { DEPTHS, IMAGE_SRCS, LAYER_Y, LAYER_Z, layerYToSceneryTranslatePx } from '../lib/constants';
 import S                      from '../lib/styles';
 
 interface SceneryOverlayProps {
@@ -12,7 +12,9 @@ export default function SceneryOverlay({ opacity, offset, showScrollHint }: Scen
     <div style={{ ...S.fullFixed, zIndex: 2, opacity, overflow: 'hidden' }}>
       {IMAGE_SRCS.map((src, i) => {
         const px = offset.x * DEPTHS[i] * window.innerWidth;
-        const py = offset.y * DEPTHS[i] * window.innerHeight;
+        const py =
+          layerYToSceneryTranslatePx(LAYER_Y[i], LAYER_Z[i], window.innerHeight) +
+          offset.y * DEPTHS[i] * window.innerHeight;
         return (
           <img
             key={i}
