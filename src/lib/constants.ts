@@ -48,7 +48,7 @@ export function layerYToSceneryTranslatePx(
 }
 
 /** Stop just before the opaque background layer */
-export const CAM_END = 6.4;
+export const CAM_END = 9.4;
 
 /** Scroll progress (0–1) when orb becomes visible and begins rising from below */
 export const ORB_ENTRANCE_START = 0.4;
