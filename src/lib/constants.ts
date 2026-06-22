@@ -1,12 +1,13 @@
-import img1Src from '../assets/scene1_1-D7eS8Ahv.webp';
-import img2Src from '../assets/scene1_2-BczT2acV.webp';
-import img3Src from '../assets/scene1_3-DvxzVzdZ.webp';
-import img4Src from '../assets/scene1_4-BWKHjA2B.webp';
-import img5Src from '../assets/scene1_5-vIcvqbzi.webp';
-import img6Src from '../assets/scene1_6-CHlc-8aL.webp';
-import img7Src from '../assets/scene1_7-BXbFlz1e.webp';
-
-export const IMAGE_SRCS = [img1Src, img2Src, img3Src, img4Src, img5Src, img6Src, img7Src];
+/** Public-folder URLs (Vite serves `public/` at site root; do not import from `public/`) */
+export const IMAGE_SRCS = [
+  '/scene_bg_removed/scene1%20.webp',
+  '/scene_bg_removed/scene2_bg_removed.png',
+  '/scene_bg_removed/scene3_bg_removed.png',
+  '/scene_bg_removed/scene_4_bg_removed.png',
+  '/scene_bg_removed/scene5_bg_removed.png',
+  '/scene_bg_removed/scene6_bg_removed.png',
+  '/scene_bg_removed/scene7_bg_removed.png',
+];
 
 /** Z positions of each tunnel layer (layer 0 = deepest background) */
 export const LAYER_Z = [0, 1.0, 3.6, 3.0, 6.8, 8.4, 10.0];

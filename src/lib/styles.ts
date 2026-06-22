@@ -17,7 +17,7 @@ const S: Record<string, CSSProperties> = {
   vignette: {
     position  : 'absolute',
     inset     : 0,
-    background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.6) 100%)',
+    background: 'radial-gradient(ellipse 90% 80% at center, transparent 40%, rgba(0,0,0,0.35) 100%)',
   },
 
   centred: {

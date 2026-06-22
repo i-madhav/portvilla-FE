@@ -39,8 +39,7 @@ export default function TunnelOverlay({
       <Canvas
         flat
         camera={{ position: [0, 0, CAM_START], fov: CAM_FOV, near: 0.1, far: 300 }}
-        gl={{ antialias: true, alpha: true }}
-        style={{ background: 'transparent' }}
+        gl={{ antialias: true }}
       >
         <Suspense fallback={null}>
           <TunnelScene velocityRef={velocityRef} scrollProgressRef={scrollProgressRef} />

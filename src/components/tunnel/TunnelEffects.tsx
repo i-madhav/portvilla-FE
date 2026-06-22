@@ -25,10 +25,8 @@ export default function TunnelEffects({ scrollProgressRef }: TunnelEffectsProps)
     }
   });
 
-  if (effectStrength <= 0.001) return null;
-
   return (
-    <EffectComposer>
+    <EffectComposer enabled={effectStrength > 0.001}>
       <Bloom
         intensity={0.4 * effectStrength}
         luminanceThreshold={0.2}

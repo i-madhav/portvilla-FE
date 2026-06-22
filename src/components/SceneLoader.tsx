@@ -75,11 +75,11 @@ export default function SceneLoader() {
   /* Phase 1 → 2: assets loaded, fade out loader, reveal scenery */
   useEffect(() => {
     if (!done) return;
-    const t1 = setTimeout(() => setLoaderFading(true), 500);
+    const t1 = setTimeout(() => setLoaderFading(true), 4500);
     const t2 = setTimeout(() => {
       setPhase('scenery');
       requestAnimationFrame(() => setSceneryOpacity(1));
-    }, 1300);
+    }, 5800);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [done]);
 
@@ -95,8 +95,10 @@ export default function SceneLoader() {
       setOrbVisible(false);
       jumpToPageTop();
       setPhase('tunnel');
-      setTunnelOpacity(1);
-      setTimeout(() => setSceneryOpacity(0), 400);
+      requestAnimationFrame(() => {
+        setTunnelOpacity(1);
+        setTimeout(() => setSceneryOpacity(0), 400);
+      });
       window.removeEventListener('scroll', onScroll);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
