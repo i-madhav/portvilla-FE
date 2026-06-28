@@ -18,7 +18,20 @@
     /* Linting */
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    /* Path aliases */
+    "baseUrl": ".",
+    "paths": {
+      "@typings/*": ["src/typings/*"],
+      "@app/*": ["src/*"],
+      "@pages/*": ["src/pages/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@api-hooks/*": ["src/api-hooks/*"],
+      "@stores/*": ["src/stores/*"],
+      "@routes/*": ["src/routes/*"],
+      "@shared-components/*": ["src/shared-components/*"]
+    }
   },
   "include": ["src"]
 }

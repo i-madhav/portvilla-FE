@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { apiClient } from '../lib/apiClient';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -171,6 +171,21 @@ const authSlice = createSlice({
     clearMessage(state) {
       state.lastMessage = null;
     },
+    /** Set tokens and persist to localStorage (used by react-query hooks) */
+    setTokensAndPersist(state, action: PayloadAction<TokenResponse>) {
+      state.accessToken = action.payload.accessToken;
+      state.refreshToken = action.payload.refreshToken;
+      saveTokens(action.payload.accessToken, action.payload.refreshToken);
+    },
+    /** Clear tokens from state and localStorage (used by react-query hooks) */
+    clearTokensAndState(state) {
+      state.accessToken = null;
+      state.refreshToken = null;
+      state.status = 'idle';
+      state.error = null;
+      state.lastMessage = null;
+      clearTokens();
+    },
   },
   extraReducers: (builder) => {
     const pending = (state: AuthState) => {
@@ -276,5 +291,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearError, clearMessage } = authSlice.actions;
+export const { clearError, clearMessage, setTokensAndPersist, clearTokensAndState } = authSlice.actions;
 export default authSlice.reducer;

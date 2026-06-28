@@ -3,18 +3,10 @@ import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import './index.css';
-import App from './App.tsx';
-import { store } from './stores/store.ts';
-import RegisterPage from './routes/auth/RegisterPage.tsx';
-import VerifyEmailPage from './routes/auth/VerifyEmailPage.tsx';
-import LoginPage from './routes/auth/LoginPage.tsx';
+import { store } from '@stores/store';
+import { routes } from '@routes/index';
 
-const router = createBrowserRouter([
-  { path: '/', element: <App /> },
-  { path: '/auth/register', element: <RegisterPage /> },
-  { path: '/auth/verify-email', element: <VerifyEmailPage /> },
-  { path: '/auth/login', element: <LoginPage /> },
-]);
+const router = createBrowserRouter(routes);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

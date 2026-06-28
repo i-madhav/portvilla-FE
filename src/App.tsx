@@ -1,11 +1,21 @@
-import SceneLoader from './components/SceneLoader';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Outlet } from 'react-router-dom';
+import { ToastProvider } from '@app/providers/ToastContext';
+
+const queryClient = new QueryClient();
 
 /**
- * App — FullCircle Landing Page
+ * Root layout — wraps the entire app with providers.
  *
- * Phase 1: Image preloader with 0→100 % counter (bottom-left)
- * Phase 2: Layered parallax scene reveal
+ * Routes nested inside this layout (defined in main.tsx / routes/)
+ * render via <Outlet />.
  */
 export default function App() {
-  return <SceneLoader />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ToastProvider>
+        <Outlet />
+      </ToastProvider>
+    </QueryClientProvider>
+  );
 }

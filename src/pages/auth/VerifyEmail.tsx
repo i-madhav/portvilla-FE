@@ -1,35 +1,41 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../../stores/store';
-import { verifyEmail, resendOtp, clearError, clearMessage } from '../../stores/authSlice';
+import { useAppSelector } from '@stores/store';
+import { useVerifyEmail, useResendOtp } from '@api-hooks/auth/useAuthHooks';
+import { ROUTES } from '@routes/index';
 
-export default function VerifyEmailPage() {
-  const dispatch = useAppDispatch();
+export function VerifyEmailPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { status, error, lastMessage } = useAppSelector((s) => s.auth);
+  const { accessToken } = useAppSelector((s) => s.auth);
+
+  const verifyMutation = useVerifyEmail();
+  const resendMutation = useResendOtp();
 
   const emailFromState = (location.state as { email?: string })?.email ?? '';
   const [email, setEmail] = useState(emailFromState);
   const [otp, setOtp] = useState('');
 
+  // Redirect if already logged in
   useEffect(() => {
-    dispatch(clearError());
-    dispatch(clearMessage());
-  }, [dispatch]);
+    if (accessToken) navigate(ROUTES.CONTRACTS_OVERVIEW, { replace: true });
+  }, [accessToken, navigate]);
 
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault();
-    const result = await dispatch(verifyEmail({ email, otp }));
-    if (verifyEmail.fulfilled.match(result)) {
-      setTimeout(() => navigate('/auth/login'), 1500);
+    const result = await verifyMutation.mutateAsync({ email, otp });
+    if (result.message) {
+      setTimeout(() => navigate(ROUTES.LOGIN), 1500);
     }
   }
 
   async function handleResend() {
     if (!email) return;
-    dispatch(resendOtp(email));
+    resendMutation.mutate(email);
   }
+
+  const error = verifyMutation.error?.message || resendMutation.error?.message || null;
+  const isLoading = verifyMutation.isPending || resendMutation.isPending;
 
   return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: '#273338' }}>
@@ -80,25 +86,25 @@ export default function VerifyEmailPage() {
               {error}
             </p>
           )}
-          {lastMessage && (
+          {verifyMutation.isSuccess && (
             <p className="text-xs px-3 py-2 rounded-lg" style={{ background: '#273338', color: '#9CB080' }}>
-              {lastMessage}
+              Email verified! Redirecting to login…
             </p>
           )}
 
           <button
             type="submit"
-            disabled={status === 'loading'}
+            disabled={isLoading}
             className="w-full py-2.5 rounded-lg text-sm font-medium transition-opacity disabled:opacity-60"
             style={{ background: '#618764', color: '#273338' }}
           >
-            {status === 'loading' ? 'Verifying…' : 'Verify email'}
+            {isLoading ? 'Verifying…' : 'Verify email'}
           </button>
         </form>
 
         <button
           onClick={handleResend}
-          disabled={status === 'loading' || !email}
+          disabled={isLoading || !email}
           className="w-full mt-3 py-2.5 rounded-lg text-sm font-medium transition-opacity disabled:opacity-40"
           style={{ background: 'transparent', color: '#618764', border: '1px solid #618764' }}
         >
