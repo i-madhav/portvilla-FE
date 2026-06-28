@@ -15,7 +15,7 @@ interface TunnelOverlayProps {
   scrollProgressRef : React.MutableRefObject<number>;
   orbVisible        : boolean;
   orbHandle         : OrbHandle;
-  orbDocked         : boolean;
+  orbVanishing      : boolean;
   orbEntranceRef    : React.MutableRefObject<OrbEntranceState>;
 }
 
@@ -26,7 +26,7 @@ export default function TunnelOverlay({
   scrollProgressRef,
   orbVisible,
   orbHandle,
-  orbDocked,
+  orbVanishing,
   orbEntranceRef,
 }: TunnelOverlayProps) {
   return (
@@ -46,7 +46,7 @@ export default function TunnelOverlay({
           <OrbCore2D
             visible={orbVisible}
             orbHandle={orbHandle}
-            docked={orbDocked}
+            vanishing={orbVanishing}
             orbEntranceRef={orbEntranceRef}
           />
         </Suspense>

@@ -46,6 +46,7 @@ export default function SceneLoader() {
   const [sceneryOpacity,   setSceneryOpacity  ] = useState(0);
   const [tunnelOpacity,    setTunnelOpacity   ] = useState(0);
   const [orbVisible,       setOrbVisible      ] = useState(false);
+  const [orbVanishing,     setOrbVanishing    ] = useState(false);
   const [waitlistVisible,  setWaitlistVisible ] = useState(false);
 
   const velocityRef       = useRef<number>(0);
@@ -66,7 +67,8 @@ export default function SceneLoader() {
 
   const handleUiCommand = useCallback((cmd: UiCommand) => {
     if (cmd.type === 'SHOW_WAITLIST') {
-      setWaitlistVisible(true);
+      setOrbVanishing(true);
+      setTimeout(() => setWaitlistVisible(true), 350);
     }
   }, []);
 
@@ -173,12 +175,12 @@ export default function SceneLoader() {
           scrollProgressRef={scrollProgressRef}
           orbVisible={orbVisible}
           orbHandle={orbHandle}
-          orbDocked={waitlistVisible}
+          orbVanishing={orbVanishing}
           orbEntranceRef={orbEntranceRef}
         />
       </div>
 
-      <WaitlistPanel visible={waitlistVisible} />
+      <WaitlistPanel visible={waitlistVisible} onDismiss={() => { setWaitlistVisible(false); setOrbVanishing(false); }} />
 
       {/* Scroll spacer — in document flow, creates page scrollbar for GSAP */}
       <div
