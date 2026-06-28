@@ -20,13 +20,13 @@ export function setTokenGetter(fn: TokenGetter) {
 }
 
 export class ApiClient {
-  private readonly base: string;
+  protected readonly base: string;
 
   constructor(prefix = API_PREFIX) {
     this.base = `${API_BASE}${prefix}`;
   }
 
-  private headers(auth = false): HeadersInit {
+  protected headers(auth = false): HeadersInit {
     const h: Record<string, string> = { 'Content-Type': 'application/json' };
     if (auth) {
       const token = getToken();
@@ -35,7 +35,7 @@ export class ApiClient {
     return h;
   }
 
-  private async handle<T>(res: Response): Promise<T> {
+  protected async handle<T>(res: Response): Promise<T> {
     if (res.ok) {
       const text = await res.text();
       return (text ? JSON.parse(text) : undefined) as T;
@@ -85,4 +85,17 @@ export class ApiClient {
   }
 }
 
+/**
+ * Authenticated API client — every call automatically sends the bearer token.
+ */
+export class AuthenticatedApiClient extends ApiClient {
+  protected override headers(_auth = false): HeadersInit {
+    const h: Record<string, string> = { 'Content-Type': 'application/json' };
+    const token = getToken();
+    if (token) h['Authorization'] = `Bearer ${token}`;
+    return h;
+  }
+}
+
 export const apiClient = new ApiClient();
+export const authClient = new AuthenticatedApiClient();

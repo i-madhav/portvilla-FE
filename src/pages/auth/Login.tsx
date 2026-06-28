@@ -1,21 +1,19 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../../stores/store';
-import {
-  login,
-  requestLoginOtp,
-  loginWithOtp,
-  clearError,
-  clearMessage,
-} from '../../stores/authSlice';
+import { useAppSelector } from '@stores/store';
+import { useLogin, useRequestLoginOtp, useLoginWithOtp } from '@api-hooks/auth/useAuthHooks';
+import { ROUTES } from '@routes/index';
 
 type Tab = 'password' | 'otp';
 type OtpStep = 'request' | 'verify';
 
-export default function LoginPage() {
-  const dispatch = useAppDispatch();
+export function Login() {
   const navigate = useNavigate();
-  const { status, error, lastMessage } = useAppSelector((s) => s.auth);
+  const { accessToken } = useAppSelector((s) => s.auth);
+
+  const loginMutation = useLogin();
+  const requestOtpMutation = useRequestLoginOtp();
+  const loginWithOtpMutation = useLoginWithOtp();
 
   const [tab, setTab] = useState<Tab>('password');
   const [email, setEmail] = useState('');
@@ -23,30 +21,43 @@ export default function LoginPage() {
   const [otp, setOtp] = useState('');
   const [otpStep, setOtpStep] = useState<OtpStep>('request');
 
+  // Redirect if already logged in
   useEffect(() => {
-    dispatch(clearError());
-    dispatch(clearMessage());
+    if (accessToken) navigate(ROUTES.CONTRACTS_OVERVIEW, { replace: true });
+  }, [accessToken, navigate]);
+
+  useEffect(() => {
     setOtpStep('request');
     setOtp('');
-  }, [dispatch, tab]);
+  }, [tab]);
 
   async function handlePasswordLogin(e: React.FormEvent) {
     e.preventDefault();
-    const result = await dispatch(login({ email, password }));
-    if (login.fulfilled.match(result)) navigate('/');
+    const result = await loginMutation.mutateAsync({ email, password });
+    if (result.accessToken) {
+      navigate(ROUTES.CONTRACTS_OVERVIEW, { replace: true });
+    }
   }
 
   async function handleRequestOtp(e: React.FormEvent) {
     e.preventDefault();
-    const result = await dispatch(requestLoginOtp(email));
-    if (requestLoginOtp.fulfilled.match(result)) setOtpStep('verify');
+    await requestOtpMutation.mutateAsync(email);
+    setOtpStep('verify');
   }
 
   async function handleOtpLogin(e: React.FormEvent) {
     e.preventDefault();
-    const result = await dispatch(loginWithOtp({ email, otp }));
-    if (loginWithOtp.fulfilled.match(result)) navigate('/');
+    const result = await loginWithOtpMutation.mutateAsync({ email, otp });
+    if (result.accessToken) {
+      navigate(ROUTES.CONTRACTS_OVERVIEW, { replace: true });
+    }
   }
+
+  const isLoading = loginMutation.isPending || requestOtpMutation.isPending || loginWithOtpMutation.isPending;
+  const error = loginMutation.error?.message
+    || requestOtpMutation.error?.message
+    || loginWithOtpMutation.error?.message
+    || null;
 
   const tabStyle = (active: boolean) => ({
     color: active ? '#9CB080' : '#618764',
@@ -55,7 +66,7 @@ export default function LoginPage() {
     padding: '0.5rem 1rem',
     fontSize: '0.875rem',
     fontWeight: active ? 600 : 400,
-    cursor: 'pointer',
+    cursor: 'pointer' as const,
     transition: 'color 0.15s',
   });
 
@@ -119,12 +130,18 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={status === 'loading'}
+              disabled={isLoading}
               className="w-full py-2.5 rounded-lg text-sm font-medium transition-opacity disabled:opacity-60"
               style={{ background: '#618764', color: '#273338' }}
             >
-              {status === 'loading' ? 'Signing in…' : 'Sign in'}
+              {isLoading ? 'Signing in…' : 'Sign in'}
             </button>
+
+            <div className="text-center mt-2">
+              <Link to={ROUTES.FORGOT_PASSWORD} className="text-xs underline" style={{ color: '#618764' }}>
+                Forgot password?
+              </Link>
+            </div>
           </form>
         )}
 
@@ -154,11 +171,11 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={status === 'loading'}
+              disabled={isLoading}
               className="w-full py-2.5 rounded-lg text-sm font-medium transition-opacity disabled:opacity-60"
               style={{ background: '#618764', color: '#273338' }}
             >
-              {status === 'loading' ? 'Sending code…' : 'Send login code'}
+              {isLoading ? 'Sending code…' : 'Send login code'}
             </button>
           </form>
         )}
@@ -190,19 +207,14 @@ export default function LoginPage() {
                 {error}
               </p>
             )}
-            {lastMessage && (
-              <p className="text-xs px-3 py-2 rounded-lg" style={{ background: '#273338', color: '#9CB080' }}>
-                {lastMessage}
-              </p>
-            )}
 
             <button
               type="submit"
-              disabled={status === 'loading'}
+              disabled={isLoading}
               className="w-full py-2.5 rounded-lg text-sm font-medium transition-opacity disabled:opacity-60"
               style={{ background: '#618764', color: '#273338' }}
             >
-              {status === 'loading' ? 'Signing in…' : 'Sign in'}
+              {isLoading ? 'Signing in…' : 'Sign in'}
             </button>
 
             <button
@@ -218,7 +230,7 @@ export default function LoginPage() {
 
         <p className="text-xs mt-6 text-center" style={{ color: '#618764' }}>
           Don't have an account?{' '}
-          <Link to="/auth/register" className="underline" style={{ color: '#9CB080' }}>
+          <Link to={ROUTES.SIGNUP} className="underline" style={{ color: '#9CB080' }}>
             Sign up
           </Link>
         </p>

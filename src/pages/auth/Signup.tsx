@@ -1,26 +1,27 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../../stores/store';
-import { register, clearError, clearMessage } from '../../stores/authSlice';
+import { useAppSelector } from '@stores/store';
+import { useRegister } from '@api-hooks/auth/useAuthHooks';
+import { ROUTES } from '@routes/index';
 
-export default function RegisterPage() {
-  const dispatch = useAppDispatch();
+export function Signup() {
   const navigate = useNavigate();
-  const { status, error, lastMessage } = useAppSelector((s) => s.auth);
+  const { accessToken } = useAppSelector((s) => s.auth);
+  const registerMutation = useRegister();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  // Redirect if already logged in
   useEffect(() => {
-    dispatch(clearError());
-    dispatch(clearMessage());
-  }, [dispatch]);
+    if (accessToken) navigate(ROUTES.CONTRACTS_OVERVIEW, { replace: true });
+  }, [accessToken, navigate]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const result = await dispatch(register({ email, password }));
-    if (register.fulfilled.match(result)) {
-      navigate('/auth/verify-email', { state: { email } });
+    const result = await registerMutation.mutateAsync({ email, password });
+    if (result.message) {
+      navigate(ROUTES.VERIFY_EMAIL, { state: { email } });
     }
   }
 
@@ -73,30 +74,25 @@ export default function RegisterPage() {
             />
           </div>
 
-          {error && (
+          {registerMutation.error && (
             <p className="text-xs px-3 py-2 rounded-lg" style={{ background: '#273338', color: '#ff7b6b' }}>
-              {error}
-            </p>
-          )}
-          {lastMessage && (
-            <p className="text-xs px-3 py-2 rounded-lg" style={{ background: '#273338', color: '#9CB080' }}>
-              {lastMessage}
+              {registerMutation.error.message}
             </p>
           )}
 
           <button
             type="submit"
-            disabled={status === 'loading'}
+            disabled={registerMutation.isPending}
             className="w-full py-2.5 rounded-lg text-sm font-medium transition-opacity disabled:opacity-60"
             style={{ background: '#618764', color: '#273338' }}
           >
-            {status === 'loading' ? 'Creating account…' : 'Create account'}
+            {registerMutation.isPending ? 'Creating account…' : 'Create account'}
           </button>
         </form>
 
         <p className="text-xs mt-6 text-center" style={{ color: '#618764' }}>
           Already have an account?{' '}
-          <Link to="/auth/login" className="underline" style={{ color: '#9CB080' }}>
+          <Link to={ROUTES.LOGIN} className="underline" style={{ color: '#9CB080' }}>
             Sign in
           </Link>
         </p>
