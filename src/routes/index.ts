@@ -3,15 +3,17 @@ import { useNavigate, useLocation } from 'react-router-dom';
 
 import { authRoutes } from './auth.routes';
 import { publicRoutes } from './publicRoutes';
+import { onboardingRoutes } from './onboarding.routes';
 
 // Combine route modules — more will be added as features grow
 export const routes: RouteObject[] = [
   ...publicRoutes,
   ...authRoutes,
+  ...onboardingRoutes,
 ];
 
 // Export individual route modules for testing or specific use cases
-export { authRoutes, publicRoutes };
+export { authRoutes, publicRoutes, onboardingRoutes };
 
 // Route configuration constants
 export const ROUTES = {
@@ -22,6 +24,7 @@ export const ROUTES = {
   FORGOT_PASSWORD: '/forgot-password',
   RESET_PASSWORD: '/reset-password',
   VERIFY_EMAIL: '/verify-email',
+  ONBOARDING: '/onboarding',
   DASHBOARD: '/dashboard',
   CONTRACTS_OVERVIEW: '/dashboard/contracts/overview',
   CONTRACTS_ALL: '/dashboard/contracts/all',
