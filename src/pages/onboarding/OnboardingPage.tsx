@@ -11,12 +11,8 @@ import type {
   EntityType,
   ProfileVisibility,
 } from '@typings/profileApi';
-import {
-  validateUsername,
-  sanitiseUsernameInput,
-} from '@typings/profileApi';
 
-import { pageStyle, cardStyle } from './styles';
+import { pageStyle, cardStyle, COLORS } from './styles';
 import { StepIndicator } from './components/StepIndicator';
 import { WelcomeStep } from './steps/WelcomeStep';
 import { IdentityStep } from './steps/IdentityStep';
@@ -35,7 +31,7 @@ interface StepMeta {
 const STEPS: StepMeta[] = [
   { key: 'welcome', label: 'Welcome', order: 0 },
   { key: 'username', label: 'Username', order: 1 },
-  { key: 'identity', label: 'About you', order: 2 },
+  { key: 'identity', label: 'Profile', order: 2 },
 ];
 
 const STEP_INDEX = new Map<string, number>(
@@ -90,19 +86,9 @@ export function OnboardingPage() {
 
   // Derive step
   const currentStepIndex = STEP_INDEX.get(currentStep) ?? -1;
-  const isFirstStep = currentStepIndex === 0;
-  const isLastStep = currentStepIndex === STEPS.length - 1;
   const stepCount = STEPS.length;
 
   // ─── Navigation ───────────────────────────────────────────────────────────
-
-  // Transition to next step — handles persistence between steps
-  const goNext = useCallback(() => {
-    const nextIndex = currentStepIndex + 1;
-    if (nextIndex < stepCount) {
-      setCurrentStep(STEPS[nextIndex].key);
-    }
-  }, [currentStepIndex, stepCount]);
 
   const goBack = useCallback(() => {
     const prevIndex = currentStepIndex - 1;
@@ -126,12 +112,7 @@ export function OnboardingPage() {
   );
 
   const handleIdentitySubmit = useCallback(
-    async (data: {
-      name: string;
-      entityType: EntityType;
-      tagline: string;
-      bio: string;
-    }) => {
+    async (data: { name: string; entityType: EntityType; tagline: string; bio: string }) => {
       const merged = { ...formData, ...data };
 
       try {
@@ -149,8 +130,6 @@ export function OnboardingPage() {
           },
         });
 
-        // On success, redirect to the dashboard / profile edit page
-        // The profile is now created and can be further populated from the dashboard.
         navigate(ROUTES.DASHBOARD, { replace: true });
       } catch {
         // Error is handled by the mutation hook (toast + store)
@@ -168,20 +147,60 @@ export function OnboardingPage() {
     }
 
     if (profileState.exists) {
-      // Profile already exists — redirect to dashboard
       navigate(ROUTES.DASHBOARD, { replace: true });
       return;
     }
 
-    // No profile — start onboarding
     setCurrentStep('welcome');
   }, [isBootstrapLoading, profileState.exists, navigate]);
+
+  // ─── Loading state ───────────────────────────────────────────────────────
 
   if (!authGuard.current || currentStep === 'loading') {
     return (
       <div style={pageStyle}>
-        <div style={cardStyle}>
-          <p style={{ color: '#618764', textAlign: 'center' }}>Loading…</p>
+        <div
+          style={{
+            ...cardStyle,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '4rem 2rem',
+            gap: '1rem',
+          }}
+        >
+          {/* Pulse brand mark */}
+          <div
+            style={{
+              width: '3.5rem',
+              height: '3.5rem',
+              borderRadius: '1rem',
+              background: COLORS.inputBg,
+              border: `1px solid ${COLORS.mutedText}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '1.5rem',
+              fontWeight: 700,
+              color: COLORS.primaryText,
+            }}
+          >
+            P
+          </div>
+          <div
+            style={{
+              width: '1.5rem',
+              height: '1.5rem',
+              borderRadius: '50%',
+              border: `2px solid ${COLORS.mutedText}`,
+              borderTopColor: COLORS.primaryText,
+              animation: 'spin 0.8s linear infinite',
+            }}
+          />
+          <p style={{ color: COLORS.mutedText, fontSize: '0.8rem', margin: 0 }}>
+            Loading…
+          </p>
         </div>
       </div>
     );
@@ -192,7 +211,7 @@ export function OnboardingPage() {
   return (
     <div style={pageStyle}>
       <div style={cardStyle}>
-        {/* Step indicator bar */}
+        {/* Step indicator bar — only after welcome */}
         {currentStep !== 'welcome' && (
           <StepIndicator
             steps={STEPS.map((s) => s.label)}
@@ -201,12 +220,11 @@ export function OnboardingPage() {
           />
         )}
 
-        {/* Welcome step */}
+        {/* Step content */}
         {currentStep === 'welcome' && (
           <WelcomeStep onContinue={handleWelcomeContinue} />
         )}
 
-        {/* Username step */}
         {currentStep === 'username' && (
           <UsernameStep
             initialUsername={formData.username}
@@ -217,7 +235,6 @@ export function OnboardingPage() {
           />
         )}
 
-        {/* Identity step */}
         {currentStep === 'identity' && (
           <IdentityStep
             initialName={formData.name}

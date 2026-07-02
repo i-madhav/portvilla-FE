@@ -1,8 +1,6 @@
 import { useState, useCallback } from 'react';
 import type { EntityType } from '@typings/profileApi';
-import {
-  EntityType as EntityTypeEnum,
-} from '@typings/profileApi';
+import { EntityType as EntityTypeEnum } from '@typings/profileApi';
 import {
   titleStyle,
   subtitleStyle,
@@ -10,17 +8,11 @@ import {
   inputStyle,
   textareaStyle,
   selectStyle,
-  buttonStyle,
+  fieldGroupStyle,
+  primaryButtonStyle,
+  ghostButtonStyle,
+  COLORS,
 } from '../styles';
-
-// ─── Entity type display labels ──────────────────────────────────────────────
-
-const ENTITY_LABELS: Record<EntityType, string> = {
-  [EntityTypeEnum.Individual]: 'Individual / Freelancer',
-  [EntityTypeEnum.Company]: 'Company / Startup',
-  [EntityTypeEnum.Product]: 'Product',
-  [EntityTypeEnum.Organization]: 'Organization / Community',
-};
 
 interface IdentityStepProps {
   initialName: string;
@@ -36,6 +28,16 @@ interface IdentityStepProps {
   onBack: () => void;
   isSubmitting: boolean;
 }
+
+const ENTITY_OPTIONS: {
+  value: EntityType;
+  label: string;
+}[] = [
+  { value: EntityTypeEnum.Individual, label: 'Individual / Freelancer' },
+  { value: EntityTypeEnum.Company, label: 'Company / Startup' },
+  { value: EntityTypeEnum.Product, label: 'Product' },
+  { value: EntityTypeEnum.Organization, label: 'Organization / Community' },
+];
 
 export function IdentityStep({
   initialName,
@@ -57,46 +59,62 @@ export function IdentityStep({
     (e: React.FormEvent) => {
       e.preventDefault();
       if (!canContinue) return;
-
-      onContinue({
-        name: name.trim(),
-        entityType,
-        tagline: tagline.trim(),
-        bio: bio.trim(),
-      });
+      onContinue({ name: name.trim(), entityType, tagline: tagline.trim(), bio: bio.trim() });
     },
     [name, entityType, tagline, bio, canContinue, onContinue],
   );
 
+  function renderField(
+    labelText: string,
+    required: boolean,
+    children: React.ReactNode,
+  ) {
+    return (
+      <div style={fieldGroupStyle('1.125rem')}>
+        <label style={labelStyle}>
+          {labelText}
+          {required && (
+            <span style={{ color: COLORS.mutedText, fontSize: '0.65rem', fontWeight: 400 }}>
+              {' *'}
+            </span>
+          )}
+          {!required && (
+            <span style={{ color: COLORS.mutedText, fontSize: '0.65rem', fontWeight: 400, marginLeft: '0.25rem' }}>
+              (optional)
+            </span>
+          )}
+        </label>
+        {children}
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={handleSubmit}>
-      <h1 style={titleStyle}>Tell us about yourself</h1>
+      <h1 style={titleStyle}>Introduce yourself</h1>
       <p style={subtitleStyle}>
-        This information will appear on your public profile.
+        This is what visitors will see first on your profile.
       </p>
 
-      {/* Entity type */}
-      <div style={{ marginBottom: '1rem' }}>
-        <label style={labelStyle}>Profile type</label>
+      {/* Entity type — select */}
+      {renderField('Profile type', true, (
         <select
           value={entityType}
           onChange={(e) => setEntityType(e.target.value as EntityType)}
           style={selectStyle()}
         >
-          {Object.entries(ENTITY_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
+          {ENTITY_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
             </option>
           ))}
         </select>
-      </div>
+      ))}
 
       {/* Name */}
-      <div style={{ marginBottom: '1rem' }}>
-        <label style={labelStyle}>
-          {entityType === EntityTypeEnum.Individual ? 'Your name' : 'Name / Brand name'}
-          <span style={{ color: '#618764', fontSize: '0.65rem' }}> *</span>
-        </label>
+      {renderField(
+        entityType === EntityTypeEnum.Individual ? 'Your name' : 'Name / Brand',
+        true,
         <input
           type="text"
           required
@@ -104,20 +122,14 @@ export function IdentityStep({
           onChange={(e) => setName(e.target.value)}
           style={inputStyle(false)}
           placeholder={
-            entityType === EntityTypeEnum.Individual
-              ? 'Jane Doe'
-              : 'Acme Corp'
+            entityType === EntityTypeEnum.Individual ? 'e.g. Jane Doe' : 'e.g. Acme Corp'
           }
           autoFocus
-        />
-      </div>
+        />,
+      )}
 
       {/* Tagline */}
-      <div style={{ marginBottom: '1rem' }}>
-        <label style={labelStyle}>
-          Tagline{' '}
-          <span style={{ color: '#618764', fontSize: '0.65rem' }}>(optional)</span>
-        </label>
+      {renderField('Tagline', false, (
         <input
           type="text"
           value={tagline}
@@ -126,59 +138,58 @@ export function IdentityStep({
           placeholder="Full-stack engineer · Designer · Creator"
           maxLength={120}
         />
-      </div>
+      ))}
 
       {/* Bio */}
-      <div style={{ marginBottom: '1.5rem' }}>
-        <label style={labelStyle}>
-          Bio{' '}
-          <span style={{ color: '#618764', fontSize: '0.65rem' }}>(optional)</span>
-        </label>
-        <textarea
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
-          style={textareaStyle(false)}
-          placeholder="A short professional summary…"
-          rows={4}
-          maxLength={500}
-        />
-        <span
-          style={{
-            color: '#618764',
-            fontSize: '0.65rem',
-            display: 'block',
-            textAlign: 'right',
-            marginTop: '0.125rem',
-          }}
-        >
-          {bio.length}/500
-        </span>
-      </div>
+      {renderField('Bio', false, (
+        <>
+          <textarea
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            style={textareaStyle(false)}
+            placeholder="A short professional summary…"
+            rows={4}
+            maxLength={500}
+          />
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              marginTop: '0.25rem',
+            }}
+          >
+            <span style={{ color: COLORS.mutedText, fontSize: '0.65rem' }}>
+              {bio.length}/500
+            </span>
+          </div>
+        </>
+      ))}
 
-      <button
-        type="submit"
-        disabled={!canContinue}
-        style={buttonStyle(!canContinue)}
-      >
-        {isSubmitting ? 'Creating profile…' : 'Create profile'}
-      </button>
-
-      <button
-        type="button"
-        onClick={onBack}
+      {/* Actions */}
+      <div
         style={{
-          background: 'transparent',
-          border: 'none',
-          color: '#618764',
-          fontSize: '0.75rem',
-          cursor: 'pointer',
-          display: 'block',
-          margin: '0.75rem auto 0',
-          textDecoration: 'underline',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.5rem',
+          marginTop: '1.5rem',
         }}
       >
-        ← Back
-      </button>
+        <button
+          type="submit"
+          disabled={!canContinue}
+          style={primaryButtonStyle(!canContinue)}
+        >
+          {isSubmitting ? 'Creating your profile…' : 'Create profile'}
+        </button>
+        <button
+          type="button"
+          onClick={onBack}
+          disabled={isSubmitting}
+          style={ghostButtonStyle(isSubmitting)}
+        >
+          ← Back
+        </button>
+      </div>
     </form>
   );
 }

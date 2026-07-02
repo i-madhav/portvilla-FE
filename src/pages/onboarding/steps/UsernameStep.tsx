@@ -9,8 +9,13 @@ import {
   subtitleStyle,
   labelStyle,
   inputStyle,
-  buttonStyle,
+  fieldGroupStyle,
   errorBoxStyle,
+  successBoxStyle,
+  primaryButtonStyle,
+  ghostButtonStyle,
+  radioCardStyle,
+  COLORS,
 } from '../styles';
 
 interface UsernameStepProps {
@@ -24,6 +29,16 @@ interface UsernameStepProps {
   ) => void;
   onBack: () => void;
 }
+
+const VISIBILITY_OPTIONS: {
+  value: ProfileVisibility;
+  label: string;
+  description: string;
+}[] = [
+  { value: 'public', label: 'Public', description: 'Anyone can view your profile' },
+  { value: 'private', label: 'Private', description: 'Only you can see it' },
+  { value: 'protected', label: 'Protected', description: 'Password-gated access' },
+];
 
 export function UsernameStep({
   initialUsername,
@@ -57,10 +72,7 @@ export function UsernameStep({
   const isProtected = visibility === 'protected';
   const isPasswordValid = !isProtected || protectedPassword.length >= 6;
   const usernameResult = username.length >= 3 ? validateUsername(username) : { valid: false };
-  const canContinue =
-    username.length >= 3 &&
-    usernameResult.valid &&
-    isPasswordValid;
+  const canContinue = username.length >= 3 && usernameResult.valid && isPasswordValid;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -70,78 +82,105 @@ export function UsernameStep({
 
   return (
     <form onSubmit={handleSubmit}>
-      <h1 style={titleStyle}>Choose your username</h1>
+      <h1 style={titleStyle}>Claim your corner</h1>
       <p style={subtitleStyle}>
-        This will be your public profile URL: portvilla.in/<strong>{username || 'username'}</strong>
+        Your profile lives at a unique link. Make it yours.
       </p>
 
-      {/* Username input */}
-      <div style={{ marginBottom: '1.25rem' }}>
+      {/* Username input with live URL preview */}
+      <div style={fieldGroupStyle('1.5rem')}>
         <label style={labelStyle}>Username</label>
-        <input
-          type="text"
-          required
-          maxLength={30}
-          value={username}
-          onChange={(e) => {
-            setUsernameTouched(true);
-            handleUsernameChange(e.target.value);
+
+        {/* URL preview box */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.5rem 0.75rem 0.5rem 1rem',
+            borderRadius: '0.5rem',
+            background: COLORS.inputBg,
+            border: `1px solid ${COLORS.inputBorder}`,
+            marginBottom: '0.5rem',
           }}
-          onBlur={() => setUsernameTouched(true)}
-          style={inputStyle(!!validationError && usernameTouched)}
-          placeholder="jane-doe"
-          autoFocus
-          autoComplete="off"
-          spellCheck={false}
-        />
+        >
+          <span
+            style={{
+              color: COLORS.mutedText,
+              fontSize: '0.8rem',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+            }}
+          >
+            portvilla.in/
+          </span>
+          <input
+            type="text"
+            required
+            maxLength={30}
+            value={username}
+            onChange={(e) => {
+              setUsernameTouched(true);
+              handleUsernameChange(e.target.value);
+            }}
+            onBlur={() => setUsernameTouched(true)}
+            style={{
+              flex: 1,
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              color: username ? COLORS.primaryText : COLORS.mutedText,
+              fontSize: '0.875rem',
+              fontFamily: "'JetBrains Mono', 'Fira Code', monospace, inherit",
+              padding: 0,
+            }}
+            placeholder="your-name"
+            autoComplete="off"
+            spellCheck={false}
+            autoFocus
+          />
+        </div>
+
+        {/* Validation feedback */}
         {validationError && usernameTouched && (
           <p style={errorBoxStyle}>{validationError}</p>
         )}
         {usernameTouched && !validationError && username.length >= 3 && (
-          <p style={{ ...errorBoxStyle, color: '#9CB080', background: 'transparent', padding: '0.25rem 0' }}>
-            ✓ Username looks good
-          </p>
+          <p style={successBoxStyle}>✓ Username is available</p>
         )}
       </div>
 
-      {/* Visibility */}
-      <div style={{ marginBottom: '1.5rem' }}>
-        <label style={labelStyle}>Profile visibility</label>
+      {/* Visibility — card-style options */}
+      <div style={fieldGroupStyle('1.5rem')}>
+        <label style={{ ...labelStyle, marginBottom: '0.625rem' }}>Visibility</label>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          {(['public', 'private', 'protected'] as ProfileVisibility[]).map((v) => (
-            <label
-              key={v}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                cursor: 'pointer',
-                color: '#9CB080',
-                fontSize: '0.8rem',
-              }}
-            >
+          {VISIBILITY_OPTIONS.map((opt) => (
+            <label key={opt.value} style={radioCardStyle(visibility === opt.value)}>
               <input
                 type="radio"
                 name="visibility"
-                value={v}
-                checked={visibility === v}
-                onChange={() => setVisibility(v)}
+                value={opt.value}
+                checked={visibility === opt.value}
+                onChange={() => setVisibility(opt.value)}
+                style={{ accentColor: COLORS.primaryText }}
               />
-              <span style={{ textTransform: 'capitalize' }}>{v}</span>
-              <span style={{ color: '#618764', fontSize: '0.7rem' }}>
-                {v === 'public' && '— Anyone can view'}
-                {v === 'private' && '— Only you'}
-                {v === 'protected' && '— Password-gated'}
-              </span>
+              <div>
+                <div style={{ color: COLORS.primaryText, fontSize: '0.8rem', fontWeight: 600 }}>
+                  {opt.label}
+                </div>
+                <div style={{ color: COLORS.mutedText, fontSize: '0.7rem' }}>
+                  {opt.description}
+                </div>
+              </div>
             </label>
           ))}
         </div>
       </div>
 
-      {/* Protected password */}
+      {/* Protected password — shown only when needed */}
       {isProtected && (
-        <div style={{ marginBottom: '1.25rem' }}>
-          <label style={labelStyle}>Access password (min 6 chars)</label>
+        <div style={fieldGroupStyle('1.5rem')}>
+          <label style={labelStyle}>Access password</label>
           <input
             type="text"
             required
@@ -149,7 +188,7 @@ export function UsernameStep({
             value={protectedPassword}
             onChange={(e) => setProtectedPassword(e.target.value)}
             style={inputStyle(protectedPassword.length > 0 && protectedPassword.length < 6)}
-            placeholder="Enter a password to gate your profile"
+            placeholder="Min 6 characters"
             autoComplete="off"
           />
           {protectedPassword.length > 0 && protectedPassword.length < 6 && (
@@ -158,30 +197,15 @@ export function UsernameStep({
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={!canContinue}
-        style={buttonStyle(!canContinue)}
-      >
-        Continue
-      </button>
-
-      <button
-        type="button"
-        onClick={onBack}
-        style={{
-          background: 'transparent',
-          border: 'none',
-          color: '#618764',
-          fontSize: '0.75rem',
-          cursor: 'pointer',
-          display: 'block',
-          margin: '0.75rem auto 0',
-          textDecoration: 'underline',
-        }}
-      >
-        ← Back
-      </button>
+      {/* Actions */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
+        <button type="submit" disabled={!canContinue} style={primaryButtonStyle(!canContinue)}>
+          Continue
+        </button>
+        <button type="button" onClick={onBack} style={ghostButtonStyle()}>
+          ← Back
+        </button>
+      </div>
     </form>
   );
 }

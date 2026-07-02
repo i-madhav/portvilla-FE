@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react';
 import { COLORS } from '../styles';
 
 interface StepIndicatorProps {
@@ -9,82 +8,87 @@ interface StepIndicatorProps {
 
 export function StepIndicator({ steps, currentIndex, onBack }: StepIndicatorProps) {
   return (
-    <div style={containerStyle}>
+    <div style={{ marginBottom: '2rem' }}>
+      {/* Back button */}
       {onBack && (
         <button
           type="button"
-          style={backButtonStyle}
           onClick={onBack}
-          aria-label="Go back"
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: COLORS.textMuted,
+            fontSize: '0.75rem',
+            cursor: 'pointer',
+            padding: 0,
+            marginBottom: '1rem',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.25rem',
+            transition: 'color 0.15s',
+            fontFamily: "'Inter', sans-serif",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = COLORS.textSecondary)}
+          onMouseLeave={(e) => (e.currentTarget.style.color = COLORS.textMuted)}
         >
-          ← Back
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          Back
         </button>
       )}
 
-      <div style={stepDotsStyle}>
-        {steps.map((label, i) => (
-          <div key={label} style={dotWrapperStyle}>
-            <div
-              style={{
-                ...dotStyle,
-                background: i <= currentIndex ? COLORS.accent : 'transparent',
-                border: `2px solid ${i <= currentIndex ? COLORS.accent : COLORS.mutedText}`,
-              }}
-            />
+      {/* Progress bar (horizontal line with filled segment) */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0,
+          height: '2px',
+          background: COLORS.surfaceBorder,
+          borderRadius: '2px',
+          overflow: 'hidden',
+          position: 'relative',
+        }}
+      >
+        <div
+          style={{
+            height: '100%',
+            width: `${(currentIndex / (steps.length - 1)) * 100}%`,
+            background: `linear-gradient(90deg, ${COLORS.accent}, ${COLORS.gradientTo})`,
+            borderRadius: '2px',
+            transition: 'width 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
+          }}
+        />
+      </div>
+
+      {/* Step labels beneath progress bar */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          marginTop: '0.5rem',
+        }}
+      >
+        {steps.map((label, i) => {
+          const isActive = i <= currentIndex;
+          return (
             <span
+              key={label}
               style={{
-                ...stepLabelStyle,
-                color: i <= currentIndex ? COLORS.primaryText : COLORS.mutedText,
+                fontSize: '0.65rem',
+                fontWeight: isActive ? 600 : 400,
+                color: isActive ? COLORS.accent : COLORS.textMuted,
+                transition: 'color 0.3s',
+                letterSpacing: '0.03em',
+                textTransform: 'uppercase',
               }}
             >
               {label}
             </span>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 }
-
-const containerStyle: CSSProperties = {
-  marginBottom: '1.5rem',
-};
-
-const backButtonStyle: CSSProperties = {
-  background: 'transparent',
-  border: 'none',
-  color: COLORS.mutedText,
-  fontSize: '0.75rem',
-  cursor: 'pointer',
-  padding: 0,
-  marginBottom: '0.75rem',
-  display: 'block',
-};
-
-const stepDotsStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '0.5rem',
-};
-
-const dotWrapperStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '0.375rem',
-  flex: 1,
-};
-
-const dotStyle: CSSProperties = {
-  width: '10px',
-  height: '10px',
-  borderRadius: '50%',
-  flexShrink: 0,
-  transition: 'all 0.2s',
-};
-
-const stepLabelStyle: CSSProperties = {
-  fontSize: '0.65rem',
-  whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-};
