@@ -1,4 +1,4 @@
-import { authClient } from '@app/lib/apiClient';
+import { authClient, notifyUnauthorized } from '@app/lib/apiClient';
 import type {
   ProfileDataResponseDto,
   CreateProfilePayload,
@@ -69,6 +69,10 @@ async function fetchAndHandle<T>(path: string, method: string, body: FormData): 
     const text = await res.text();
     return (text ? JSON.parse(text) : undefined) as T;
   }
+
+  // These uploads always carry the bearer token, so a 401 means an expired
+  // session — funnel through the same global sign-out handler as ApiClient.
+  if (res.status === 401) notifyUnauthorized();
 
   let message = `HTTP ${res.status}`;
   try {

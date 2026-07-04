@@ -14,93 +14,98 @@ import {
   COLORS,
 } from '../styles';
 
-interface IdentityStepProps {
-  initialName: string;
-  initialEntityType: EntityType;
-  initialTagline: string;
-  initialBio: string;
-  onContinue: (data: {
-    name: string;
-    entityType: EntityType;
-    tagline: string;
-    bio: string;
-  }) => void;
-  onBack: () => void;
-  isSubmitting: boolean;
+export interface IdentityStepData {
+  name: string;
+  entityType: EntityType;
+  tagline: string;
+  bio: string;
+  about: string;
+  location: string;
+  industry: string;
+  availability: string;
 }
 
-const ENTITY_OPTIONS: {
-  value: EntityType;
-  label: string;
-}[] = [
+interface IdentityStepProps {
+  initial: IdentityStepData;
+  onContinue: (data: IdentityStepData) => void;
+  onBack: () => void;
+}
+
+const ENTITY_OPTIONS: { value: EntityType; label: string }[] = [
   { value: EntityTypeEnum.Individual, label: 'Individual / Freelancer' },
   { value: EntityTypeEnum.Company, label: 'Company / Startup' },
   { value: EntityTypeEnum.Product, label: 'Product' },
   { value: EntityTypeEnum.Organization, label: 'Organization / Community' },
 ];
 
-export function IdentityStep({
-  initialName,
-  initialEntityType,
-  initialTagline,
-  initialBio,
-  onContinue,
-  onBack,
-  isSubmitting,
-}: IdentityStepProps) {
-  const [name, setName] = useState(initialName);
-  const [entityType, setEntityType] = useState<EntityType>(initialEntityType);
-  const [tagline, setTagline] = useState(initialTagline);
-  const [bio, setBio] = useState(initialBio);
+function Field({
+  label,
+  required,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div style={fieldGroupStyle('1.125rem')}>
+      <label style={labelStyle}>
+        {label}
+        <span
+          style={{
+            color: COLORS.mutedText,
+            fontSize: '0.65rem',
+            fontWeight: 400,
+            marginLeft: '0.25rem',
+          }}
+        >
+          {required ? '*' : '(optional)'}
+        </span>
+      </label>
+      {children}
+    </div>
+  );
+}
 
-  const canContinue = name.trim().length > 0 && !isSubmitting;
+export function IdentityStep({ initial, onContinue, onBack }: IdentityStepProps) {
+  const [data, setData] = useState<IdentityStepData>(initial);
+
+  const set = <K extends keyof IdentityStepData>(key: K, value: IdentityStepData[K]) =>
+    setData((prev) => ({ ...prev, [key]: value }));
+
+  const canContinue = data.name.trim().length > 0;
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
-      if (!canContinue) return;
-      onContinue({ name: name.trim(), entityType, tagline: tagline.trim(), bio: bio.trim() });
+      if (data.name.trim().length === 0) return;
+      onContinue({
+        ...data,
+        name: data.name.trim(),
+        tagline: data.tagline.trim(),
+        bio: data.bio.trim(),
+        about: data.about.trim(),
+        location: data.location.trim(),
+        industry: data.industry.trim(),
+        availability: data.availability.trim(),
+      });
     },
-    [name, entityType, tagline, bio, canContinue, onContinue],
+    [data, onContinue],
   );
 
-  function renderField(
-    labelText: string,
-    required: boolean,
-    children: React.ReactNode,
-  ) {
-    return (
-      <div style={fieldGroupStyle('1.125rem')}>
-        <label style={labelStyle}>
-          {labelText}
-          {required && (
-            <span style={{ color: COLORS.mutedText, fontSize: '0.65rem', fontWeight: 400 }}>
-              {' *'}
-            </span>
-          )}
-          {!required && (
-            <span style={{ color: COLORS.mutedText, fontSize: '0.65rem', fontWeight: 400, marginLeft: '0.25rem' }}>
-              (optional)
-            </span>
-          )}
-        </label>
-        {children}
-      </div>
-    );
-  }
+  const isIndividual = data.entityType === EntityTypeEnum.Individual;
 
   return (
     <form onSubmit={handleSubmit}>
       <h1 style={titleStyle}>Introduce yourself</h1>
       <p style={subtitleStyle}>
-        This is what visitors will see first on your profile.
+        This is what visitors — and your AI agent — will know about you first.
       </p>
 
-      {/* Entity type — select */}
-      {renderField('Profile type', true, (
+      <Field label="Profile type" required>
         <select
-          value={entityType}
-          onChange={(e) => setEntityType(e.target.value as EntityType)}
+          value={data.entityType}
+          onChange={(e) => set('entityType', e.target.value as EntityType)}
           style={selectStyle()}
         >
           {ENTITY_OPTIONS.map((opt) => (
@@ -109,63 +114,88 @@ export function IdentityStep({
             </option>
           ))}
         </select>
-      ))}
+      </Field>
 
-      {/* Name */}
-      {renderField(
-        entityType === EntityTypeEnum.Individual ? 'Your name' : 'Name / Brand',
-        true,
+      <Field label={isIndividual ? 'Your name' : 'Name / Brand'} required>
         <input
           type="text"
           required
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={data.name}
+          onChange={(e) => set('name', e.target.value)}
           style={inputStyle(false)}
-          placeholder={
-            entityType === EntityTypeEnum.Individual ? 'e.g. Jane Doe' : 'e.g. Acme Corp'
-          }
+          placeholder={isIndividual ? 'e.g. Jane Doe' : 'e.g. Acme Corp'}
           autoFocus
-        />,
-      )}
+        />
+      </Field>
 
-      {/* Tagline */}
-      {renderField('Tagline', false, (
+      <Field label="Tagline">
         <input
           type="text"
-          value={tagline}
-          onChange={(e) => setTagline(e.target.value)}
+          value={data.tagline}
+          onChange={(e) => set('tagline', e.target.value)}
           style={inputStyle(false)}
           placeholder="Full-stack engineer · Designer · Creator"
           maxLength={120}
         />
-      ))}
+      </Field>
 
-      {/* Bio */}
-      {renderField('Bio', false, (
-        <>
-          <textarea
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            style={textareaStyle(false)}
-            placeholder="A short professional summary…"
-            rows={4}
-            maxLength={500}
-          />
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              marginTop: '0.25rem',
-            }}
-          >
-            <span style={{ color: COLORS.mutedText, fontSize: '0.65rem' }}>
-              {bio.length}/500
-            </span>
-          </div>
-        </>
-      ))}
+      <Field label="Bio">
+        <textarea
+          value={data.bio}
+          onChange={(e) => set('bio', e.target.value)}
+          style={textareaStyle(false)}
+          placeholder="A short professional summary…"
+          rows={3}
+          maxLength={500}
+        />
+      </Field>
 
-      {/* Actions */}
+      <Field label="About">
+        <textarea
+          value={data.about}
+          onChange={(e) => set('about', e.target.value)}
+          style={textareaStyle(false)}
+          placeholder="A longer story — background, what drives you, what you're building…"
+          rows={4}
+          maxLength={2000}
+        />
+      </Field>
+
+      <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <div style={{ flex: 1 }}>
+          <Field label="Location">
+            <input
+              type="text"
+              value={data.location}
+              onChange={(e) => set('location', e.target.value)}
+              style={inputStyle(false)}
+              placeholder="e.g. Berlin, DE"
+            />
+          </Field>
+        </div>
+        <div style={{ flex: 1 }}>
+          <Field label="Industry">
+            <input
+              type="text"
+              value={data.industry}
+              onChange={(e) => set('industry', e.target.value)}
+              style={inputStyle(false)}
+              placeholder="e.g. Fintech"
+            />
+          </Field>
+        </div>
+      </div>
+
+      <Field label="Availability">
+        <input
+          type="text"
+          value={data.availability}
+          onChange={(e) => set('availability', e.target.value)}
+          style={inputStyle(false)}
+          placeholder="e.g. Open to freelance · Hiring · Not available"
+        />
+      </Field>
+
       <div
         style={{
           display: 'flex',
@@ -174,19 +204,10 @@ export function IdentityStep({
           marginTop: '1.5rem',
         }}
       >
-        <button
-          type="submit"
-          disabled={!canContinue}
-          style={primaryButtonStyle(!canContinue)}
-        >
-          {isSubmitting ? 'Creating your profile…' : 'Create profile'}
+        <button type="submit" disabled={!canContinue} style={primaryButtonStyle(!canContinue)}>
+          Continue
         </button>
-        <button
-          type="button"
-          onClick={onBack}
-          disabled={isSubmitting}
-          style={ghostButtonStyle(isSubmitting)}
-        >
+        <button type="button" onClick={onBack} style={ghostButtonStyle()}>
           ← Back
         </button>
       </div>

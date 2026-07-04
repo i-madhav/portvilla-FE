@@ -8,35 +8,48 @@ import {
 } from '@api-hooks/profile/useProfileHooks';
 
 import type {
-  EntityType,
   ProfileVisibility,
+  CapabilityEntryDto,
+  TimelineEntryDto,
+  WorkEntryDto,
+  SocialDto,
+  CreateProfilePayload,
 } from '@typings/profileApi';
+import { EntityType } from '@typings/profileApi';
 
 import { pageStyle, cardStyle, COLORS } from './styles';
 import { StepIndicator } from './components/StepIndicator';
 import { WelcomeStep } from './steps/WelcomeStep';
-import { IdentityStep } from './steps/IdentityStep';
 import { UsernameStep } from './steps/UsernameStep';
+import { IdentityStep, type IdentityStepData } from './steps/IdentityStep';
+import { ExpertiseStep } from './steps/ExpertiseStep';
+import { ExperienceStep } from './steps/ExperienceStep';
+import { ProjectsStep } from './steps/ProjectsStep';
+import { ContactStep } from './steps/ContactStep';
 
 // ─── Steps ───────────────────────────────────────────────────────────────────
 
-type OnboardingStep = 'loading' | 'welcome' | 'username' | 'identity';
+type OnboardingStep =
+  | 'loading'
+  | 'welcome'
+  | 'account'
+  | 'identity'
+  | 'expertise'
+  | 'experience'
+  | 'projects'
+  | 'contact';
 
-interface StepMeta {
-  key: OnboardingStep;
-  label: string;
-  order: number;
-}
-
-const STEPS: StepMeta[] = [
-  { key: 'welcome', label: 'Welcome', order: 0 },
-  { key: 'username', label: 'Username', order: 1 },
-  { key: 'identity', label: 'Profile', order: 2 },
+/** Steps shown in the progress indicator (welcome/loading excluded). */
+const STEPS: { key: OnboardingStep; label: string }[] = [
+  { key: 'account', label: 'Account' },
+  { key: 'identity', label: 'Identity' },
+  { key: 'expertise', label: 'Skills' },
+  { key: 'experience', label: 'Journey' },
+  { key: 'projects', label: 'Work' },
+  { key: 'contact', label: 'Contact' },
 ];
 
-const STEP_INDEX = new Map<string, number>(
-  STEPS.map((s) => [s.key, s.order]),
-);
+const STEP_INDEX = new Map<string, number>(STEPS.map((s, i) => [s.key, i]));
 
 // ─── Collected form data ─────────────────────────────────────────────────────
 
@@ -44,21 +57,76 @@ interface OnboardingData {
   username: string;
   visibility: ProfileVisibility;
   protectedPassword: string;
-  entityType: EntityType;
-  name: string;
-  tagline: string;
-  bio: string;
+  identity: IdentityStepData;
+  capabilities: CapabilityEntryDto[];
+  timeline: TimelineEntryDto[];
+  works: WorkEntryDto[];
+  social: SocialDto;
 }
+
+const INITIAL_IDENTITY: IdentityStepData = {
+  name: '',
+  entityType: EntityType.Individual,
+  tagline: '',
+  bio: '',
+  about: '',
+  location: '',
+  industry: '',
+  availability: '',
+};
+
+const INITIAL_SOCIAL: SocialDto = {
+  links: [],
+  email: null,
+  phone: null,
+  calendarUrl: null,
+};
 
 const INITIAL_DATA: OnboardingData = {
   username: '',
   visibility: 'public',
   protectedPassword: '',
-  entityType: 'individual',
-  name: '',
-  tagline: '',
-  bio: '',
+  identity: INITIAL_IDENTITY,
+  capabilities: [],
+  timeline: [],
+  works: [],
+  social: INITIAL_SOCIAL,
 };
+
+// ─── Payload assembly ────────────────────────────────────────────────────────
+
+const orNull = (s: string): string | null => (s.trim() ? s.trim() : null);
+
+function buildCreatePayload(data: OnboardingData): CreateProfilePayload {
+  const hasSocial =
+    data.social.links.length > 0 ||
+    !!data.social.email ||
+    !!data.social.phone ||
+    !!data.social.calendarUrl;
+
+  return {
+    username: data.username,
+    visibility: data.visibility,
+    protectedPassword:
+      data.visibility === 'protected' ? data.protectedPassword : undefined,
+    identity: {
+      entityType: data.identity.entityType,
+      name: data.identity.name,
+      tagline: orNull(data.identity.tagline),
+      bio: orNull(data.identity.bio),
+      about: orNull(data.identity.about),
+      location: orNull(data.identity.location),
+      industry: orNull(data.identity.industry),
+      availability: orNull(data.identity.availability),
+    },
+    capabilities: data.capabilities.length ? data.capabilities : undefined,
+    timeline: data.timeline.length ? data.timeline : undefined,
+    works: data.works.length ? data.works : undefined,
+    social: hasSocial ? data.social : undefined,
+  };
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 export function OnboardingPage() {
   const navigate = useNavigate();
@@ -74,84 +142,60 @@ export function OnboardingPage() {
     authGuard.current = true;
   }, [accessToken, navigate]);
 
-  // Bootstrap: check if profile already exists
+  // Bootstrap: check if a profile already exists
   const { isLoading: isBootstrapLoading } = useOwnProfileQuery(!!accessToken);
 
-  // Mutations
   const createProfileMutation = useCreateProfile();
 
-  // Stepper state
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('loading');
-  const [formData, setFormData] = useState<OnboardingData>(INITIAL_DATA);
+  const [data, setData] = useState<OnboardingData>(INITIAL_DATA);
 
-  // Derive step
   const currentStepIndex = STEP_INDEX.get(currentStep) ?? -1;
-  const stepCount = STEPS.length;
+
+  const patch = useCallback((partial: Partial<OnboardingData>) => {
+    setData((prev) => ({ ...prev, ...partial }));
+  }, []);
 
   // ─── Navigation ───────────────────────────────────────────────────────────
 
   const goBack = useCallback(() => {
-    const prevIndex = currentStepIndex - 1;
-    if (prevIndex >= 0) {
-      setCurrentStep(STEPS[prevIndex].key);
+    if (currentStep === 'account') {
+      setCurrentStep('welcome');
+      return;
     }
-  }, [currentStepIndex]);
+    const prevIndex = currentStepIndex - 1;
+    if (prevIndex >= 0) setCurrentStep(STEPS[prevIndex].key);
+  }, [currentStep, currentStepIndex]);
 
-  // ─── Step transition handlers ─────────────────────────────────────────────
+  // ─── Submit ───────────────────────────────────────────────────────────────
 
-  const handleWelcomeContinue = useCallback(() => {
-    setCurrentStep('username');
-  }, []);
-
-  const handleUsernameContinue = useCallback(
-    (username: string, visibility: ProfileVisibility, protectedPassword: string) => {
-      setFormData((prev) => ({ ...prev, username, visibility, protectedPassword }));
-      setCurrentStep('identity');
-    },
-    [],
-  );
-
-  const handleIdentitySubmit = useCallback(
-    async (data: { name: string; entityType: EntityType; tagline: string; bio: string }) => {
-      const merged = { ...formData, ...data };
-
+  const handleCreate = useCallback(
+    async (social: SocialDto) => {
+      const finalData = { ...data, social };
+      setData(finalData);
       try {
-        await createProfileMutation.mutateAsync({
-          username: merged.username,
-          visibility: merged.visibility,
-          protectedPassword:
-            merged.visibility === 'protected' ? merged.protectedPassword : undefined,
-          identity: {
-            entityType: merged.entityType,
-            name: merged.name,
-            tagline: merged.tagline || null,
-            bio: merged.bio || null,
-            about: null,
-          },
-        });
-
+        await createProfileMutation.mutateAsync(buildCreatePayload(finalData));
         navigate(ROUTES.DASHBOARD, { replace: true });
       } catch {
-        // Error is handled by the mutation hook (toast + store)
+        // handled by the mutation hook (toast + store)
       }
     },
-    [formData, createProfileMutation, navigate],
+    [data, createProfileMutation, navigate],
   );
 
-  // ─── Redirect if profile already exists ──────────────────────────────────
+  // ─── Redirect if a profile already exists ────────────────────────────────
 
   useEffect(() => {
     if (isBootstrapLoading) {
       setCurrentStep('loading');
       return;
     }
-
     if (profileState.exists) {
       navigate(ROUTES.DASHBOARD, { replace: true });
       return;
     }
-
-    setCurrentStep('welcome');
+    // Only leave the loading screen the first time bootstrap resolves.
+    setCurrentStep((prev) => (prev === 'loading' ? 'welcome' : prev));
   }, [isBootstrapLoading, profileState.exists, navigate]);
 
   // ─── Loading state ───────────────────────────────────────────────────────
@@ -170,7 +214,6 @@ export function OnboardingPage() {
             gap: '1rem',
           }}
         >
-          {/* Pulse brand mark */}
           <div
             style={{
               width: '3.5rem',
@@ -198,52 +241,92 @@ export function OnboardingPage() {
               animation: 'spin 0.8s linear infinite',
             }}
           />
-          <p style={{ color: COLORS.mutedText, fontSize: '0.8rem', margin: 0 }}>
-            Loading…
-          </p>
+          <p style={{ color: COLORS.mutedText, fontSize: '0.8rem', margin: 0 }}>Loading…</p>
         </div>
       </div>
     );
   }
 
-  const isMutating = createProfileMutation.isPending;
+  const isCreating = createProfileMutation.isPending;
 
   return (
     <div style={pageStyle}>
       <div style={cardStyle}>
-        {/* Step indicator bar — only after welcome */}
         {currentStep !== 'welcome' && (
           <StepIndicator
             steps={STEPS.map((s) => s.label)}
             currentIndex={currentStepIndex}
-            onBack={currentStep === 'welcome' ? undefined : goBack}
+            onBack={goBack}
           />
         )}
 
-        {/* Step content */}
         {currentStep === 'welcome' && (
-          <WelcomeStep onContinue={handleWelcomeContinue} />
+          <WelcomeStep onContinue={() => setCurrentStep('account')} />
         )}
 
-        {currentStep === 'username' && (
+        {currentStep === 'account' && (
           <UsernameStep
-            initialUsername={formData.username}
-            initialVisibility={formData.visibility}
-            initialPassword={formData.protectedPassword}
-            onContinue={handleUsernameContinue}
+            initialUsername={data.username}
+            initialVisibility={data.visibility}
+            initialPassword={data.protectedPassword}
+            onContinue={(username, visibility, protectedPassword) => {
+              patch({ username, visibility, protectedPassword });
+              setCurrentStep('identity');
+            }}
             onBack={goBack}
           />
         )}
 
         {currentStep === 'identity' && (
           <IdentityStep
-            initialName={formData.name}
-            initialEntityType={formData.entityType}
-            initialTagline={formData.tagline}
-            initialBio={formData.bio}
-            onContinue={handleIdentitySubmit}
+            initial={data.identity}
+            onContinue={(identity) => {
+              patch({ identity });
+              setCurrentStep('expertise');
+            }}
             onBack={goBack}
-            isSubmitting={isMutating}
+          />
+        )}
+
+        {currentStep === 'expertise' && (
+          <ExpertiseStep
+            initial={data.capabilities}
+            onContinue={(capabilities) => {
+              patch({ capabilities });
+              setCurrentStep('experience');
+            }}
+            onBack={goBack}
+          />
+        )}
+
+        {currentStep === 'experience' && (
+          <ExperienceStep
+            initial={data.timeline}
+            onContinue={(timeline) => {
+              patch({ timeline });
+              setCurrentStep('projects');
+            }}
+            onBack={goBack}
+          />
+        )}
+
+        {currentStep === 'projects' && (
+          <ProjectsStep
+            initial={data.works}
+            onContinue={(works) => {
+              patch({ works });
+              setCurrentStep('contact');
+            }}
+            onBack={goBack}
+          />
+        )}
+
+        {currentStep === 'contact' && (
+          <ContactStep
+            initial={data.social}
+            onSubmit={handleCreate}
+            onBack={goBack}
+            isSubmitting={isCreating}
           />
         )}
       </div>

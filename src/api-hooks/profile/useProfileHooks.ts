@@ -108,9 +108,10 @@ export function useOwnProfileQuery(enabled: boolean = true) {
     enabled,
     staleTime: 30_000,
     retry: (failureCount, error) => {
-      // Don't retry 404 (no profile yet) — that's expected
+      // Don't retry 404 (no profile yet) or 401 (expired session — the global
+      // handler redirects to login); retrying either just adds noise.
       const apiError = error as { status?: number };
-      if (apiError.status === 404) return false;
+      if (apiError.status === 404 || apiError.status === 401) return false;
       return failureCount < 2;
     },
   });

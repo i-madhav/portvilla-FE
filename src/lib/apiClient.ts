@@ -19,14 +19,39 @@ export function setTokenGetter(fn: TokenGetter) {
   getToken = fn;
 }
 
+// ─── Global 401 handling ────────────────────────────────────────────────────
+// When an *authenticated* request comes back 401, the access token is expired
+// or revoked. We funnel every such case through a single handler (wired up in
+// main.tsx) so the app can clear the session and redirect to /login — instead
+// of silently swallowing the error and retrying forever.
+
+type UnauthorizedHandler = () => void;
+
+let onUnauthorized: UnauthorizedHandler = () => {};
+
+export function setUnauthorizedHandler(fn: UnauthorizedHandler) {
+  onUnauthorized = fn;
+}
+
+/**
+ * Report that an authenticated request was rejected with 401. Exposed so
+ * callers that bypass ApiClient (e.g. multipart uploads) can funnel through
+ * the same session-expiry handling.
+ */
+export function notifyUnauthorized() {
+  onUnauthorized();
+}
+
 export class ApiClient {
   protected readonly base: string;
+  /** Subclasses set this to force every request to carry the bearer token. */
+  protected readonly forceAuth: boolean = false;
 
   constructor(prefix = API_PREFIX) {
     this.base = `${API_BASE}${prefix}`;
   }
 
-  protected headers(auth = false): HeadersInit {
+  protected headers(auth: boolean): HeadersInit {
     const h: Record<string, string> = { 'Content-Type': 'application/json' };
     if (auth) {
       const token = getToken();
@@ -35,10 +60,15 @@ export class ApiClient {
     return h;
   }
 
-  protected async handle<T>(res: Response): Promise<T> {
+  protected async handle<T>(res: Response, authed: boolean): Promise<T> {
     if (res.ok) {
       const text = await res.text();
       return (text ? JSON.parse(text) : undefined) as T;
+    }
+    // An authenticated request rejected with 401 means the session is no longer
+    // valid — trigger the global sign-out + redirect before surfacing the error.
+    if (res.status === 401 && authed) {
+      onUnauthorized();
     }
     let message = `HTTP ${res.status}`;
     try {
@@ -50,51 +80,44 @@ export class ApiClient {
     throw new ApiError(res.status, message);
   }
 
-  async post<T>(path: string, body?: unknown, auth = false): Promise<T> {
+  private async request<T>(
+    method: string,
+    path: string,
+    body: unknown,
+    auth: boolean,
+  ): Promise<T> {
+    const authed = auth || this.forceAuth;
     const res = await fetch(`${this.base}${path}`, {
-      method: 'POST',
-      headers: this.headers(auth),
+      method,
+      headers: this.headers(authed),
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
-    return this.handle<T>(res);
+    return this.handle<T>(res, authed);
+  }
+
+  async post<T>(path: string, body?: unknown, auth = false): Promise<T> {
+    return this.request<T>('POST', path, body, auth);
   }
 
   async get<T>(path: string, auth = false): Promise<T> {
-    const res = await fetch(`${this.base}${path}`, {
-      method: 'GET',
-      headers: this.headers(auth),
-    });
-    return this.handle<T>(res);
+    return this.request<T>('GET', path, undefined, auth);
   }
 
   async patch<T>(path: string, body?: unknown, auth = false): Promise<T> {
-    const res = await fetch(`${this.base}${path}`, {
-      method: 'PATCH',
-      headers: this.headers(auth),
-      body: body !== undefined ? JSON.stringify(body) : undefined,
-    });
-    return this.handle<T>(res);
+    return this.request<T>('PATCH', path, body, auth);
   }
 
   async delete<T>(path: string, auth = false): Promise<T> {
-    const res = await fetch(`${this.base}${path}`, {
-      method: 'DELETE',
-      headers: this.headers(auth),
-    });
-    return this.handle<T>(res);
+    return this.request<T>('DELETE', path, undefined, auth);
   }
 }
 
 /**
- * Authenticated API client — every call automatically sends the bearer token.
+ * Authenticated API client — every call automatically sends the bearer token
+ * and participates in global 401 handling.
  */
 export class AuthenticatedApiClient extends ApiClient {
-  protected override headers(_auth = false): HeadersInit {
-    const h: Record<string, string> = { 'Content-Type': 'application/json' };
-    const token = getToken();
-    if (token) h['Authorization'] = `Bearer ${token}`;
-    return h;
-  }
+  protected override readonly forceAuth = true;
 }
 
 export const apiClient = new ApiClient();

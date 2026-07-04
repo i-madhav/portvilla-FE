@@ -14,7 +14,7 @@ export function Signup() {
 
   // Redirect if already logged in
   useEffect(() => {
-    if (accessToken) navigate(ROUTES.CONTRACTS_OVERVIEW, { replace: true });
+    if (accessToken) navigate(ROUTES.ONBOARDING, { replace: true });
   }, [accessToken, navigate]);
 
   async function handleSubmit(e: React.FormEvent) {

@@ -109,6 +109,11 @@
   50%       { opacity: 1;   transform: scaleY(1.15); }
 }
 
+/* Spinner rotation — used by onboarding/dashboard loading indicators */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Loader particles floating upward */
 @keyframes floatUp {
   0%   { transform: translateY(0)    scale(1);    opacity: 0; }

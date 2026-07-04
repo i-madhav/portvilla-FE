@@ -23,7 +23,7 @@ export function Login() {
 
   // Redirect if already logged in
   useEffect(() => {
-    if (accessToken) navigate(ROUTES.CONTRACTS_OVERVIEW, { replace: true });
+    if (accessToken) navigate(ROUTES.ONBOARDING, { replace: true });
   }, [accessToken, navigate]);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export function Login() {
     e.preventDefault();
     const result = await loginMutation.mutateAsync({ email, password });
     if (result.accessToken) {
-      navigate(ROUTES.CONTRACTS_OVERVIEW, { replace: true });
+      navigate(ROUTES.ONBOARDING, { replace: true });
     }
   }
 
@@ -49,7 +49,7 @@ export function Login() {
     e.preventDefault();
     const result = await loginWithOtpMutation.mutateAsync({ email, otp });
     if (result.accessToken) {
-      navigate(ROUTES.CONTRACTS_OVERVIEW, { replace: true });
+      navigate(ROUTES.ONBOARDING, { replace: true });
     }
   }
 

@@ -17,7 +17,7 @@ export function StepIndicator({ steps, currentIndex, onBack }: StepIndicatorProp
           style={{
             background: 'transparent',
             border: 'none',
-            color: COLORS.textMuted,
+            color: COLORS.mutedText,
             fontSize: '0.75rem',
             cursor: 'pointer',
             padding: 0,
@@ -28,8 +28,8 @@ export function StepIndicator({ steps, currentIndex, onBack }: StepIndicatorProp
             transition: 'color 0.15s',
             fontFamily: "'Inter', sans-serif",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = COLORS.textSecondary)}
-          onMouseLeave={(e) => (e.currentTarget.style.color = COLORS.textMuted)}
+          onMouseEnter={(e) => (e.currentTarget.style.color = COLORS.secondaryText)}
+          onMouseLeave={(e) => (e.currentTarget.style.color = COLORS.mutedText)}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -55,7 +55,7 @@ export function StepIndicator({ steps, currentIndex, onBack }: StepIndicatorProp
           style={{
             height: '100%',
             width: `${(currentIndex / (steps.length - 1)) * 100}%`,
-            background: `linear-gradient(90deg, ${COLORS.accent}, ${COLORS.gradientTo})`,
+            background: `linear-gradient(90deg, ${COLORS.accent}, ${COLORS.secondaryText})`,
             borderRadius: '2px',
             transition: 'width 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
           }}
@@ -78,7 +78,7 @@ export function StepIndicator({ steps, currentIndex, onBack }: StepIndicatorProp
               style={{
                 fontSize: '0.65rem',
                 fontWeight: isActive ? 600 : 400,
-                color: isActive ? COLORS.accent : COLORS.textMuted,
+                color: isActive ? COLORS.accent : COLORS.mutedText,
                 transition: 'color 0.3s',
                 letterSpacing: '0.03em',
                 textTransform: 'uppercase',
