@@ -13,7 +13,7 @@ export function ExtraSections({ profile }: Pick<SectionProps, 'profile'>) {
   const { offerings, metrics, testimonials, team, media, content } = profile;
 
   return (
-    <>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       {offerings.length > 0 && (
         <ReadOnlyCard title="Offerings" description="Services and products you offer.">
           {offerings.map((o, i) => (
@@ -27,8 +27,8 @@ export function ExtraSections({ profile }: Pick<SectionProps, 'profile'>) {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem' }}>
             {metrics.map((m, i) => (
               <div key={i}>
-                <div style={{ color: COLORS.primaryText, fontSize: '1.1rem', fontWeight: 700 }}>{m.value}</div>
-                <div style={{ color: COLORS.mutedText, fontSize: '0.72rem' }}>{m.label}</div>
+                <div style={{ color: COLORS.textPrimary, fontSize: '1.1rem', fontWeight: 700 }}>{m.value}</div>
+                <div style={{ color: COLORS.textMuted, fontSize: '0.72rem' }}>{m.label}</div>
               </div>
             ))}
           </div>
@@ -39,8 +39,8 @@ export function ExtraSections({ profile }: Pick<SectionProps, 'profile'>) {
         <ReadOnlyCard title="Testimonials" description="What others say.">
           {testimonials.map((t, i) => (
             <div key={i} style={{ marginBottom: '0.6rem' }}>
-              <div style={{ color: COLORS.secondaryText, fontSize: '0.8rem', fontStyle: 'italic' }}>“{t.text}”</div>
-              <div style={{ color: COLORS.mutedText, fontSize: '0.72rem', marginTop: '0.15rem' }}>
+              <div style={{ color: COLORS.textSecondary, fontSize: '0.8rem', fontStyle: 'italic' }}>“{t.text}”</div>
+              <div style={{ color: COLORS.textMuted, fontSize: '0.72rem', marginTop: '0.15rem' }}>
                 — {t.author}
                 {t.organization ? `, ${t.organization}` : ''}
               </div>
@@ -65,7 +65,7 @@ export function ExtraSections({ profile }: Pick<SectionProps, 'profile'>) {
               primary={c.title}
               secondary={c.type}
               trailing={
-                <a href={c.url} target="_blank" rel="noreferrer" style={{ color: COLORS.secondaryText, fontSize: '0.72rem' }}>
+                <a href={c.url} target="_blank" rel="noreferrer" style={{ color: COLORS.textSecondary, fontSize: '0.72rem' }}>
                   ↗
                 </a>
               }
@@ -79,7 +79,7 @@ export function ExtraSections({ profile }: Pick<SectionProps, 'profile'>) {
           <Chips items={media.map((m) => m.caption || m.type)} />
         </ReadOnlyCard>
       )}
-    </>
+    </div>
   );
 }
 
@@ -107,8 +107,8 @@ function Row({
   return (
     <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '0.75rem', padding: '0.25rem 0' }}>
       <div>
-        <span style={{ color: COLORS.primaryText, fontSize: '0.82rem', fontWeight: 600 }}>{primary}</span>
-        {secondary && <span style={{ color: COLORS.mutedText, fontSize: '0.72rem', marginLeft: '0.5rem' }}>{secondary}</span>}
+        <span style={{ color: COLORS.textPrimary, fontSize: '0.82rem', fontWeight: 600 }}>{primary}</span>
+        {secondary && <span style={{ color: COLORS.textMuted, fontSize: '0.72rem', marginLeft: '0.5rem' }}>{secondary}</span>}
       </div>
       {trailing && <div style={{ flexShrink: 0 }}>{trailing}</div>}
     </div>

@@ -1,0 +1,199 @@
+import { useState } from 'react';
+import type { Completeness } from '../useProfileCompleteness';
+import { COLORS, RADIUS, MOTION, buttonStyle } from '../styles';
+
+interface CompletenessCardProps {
+  completeness: Completeness;
+  onJump: (target: string) => void;
+}
+
+/**
+ * Progress plus one concrete next action.
+ *
+ * The old dashboard never told the owner what was missing — seven identical
+ * cards, no hierarchy, nothing to come back for. A meter alone would just be
+ * decoration, so the card leads with the single highest-value gap and makes it
+ * one click away.
+ */
+export function CompletenessCard({ completeness, onJump }: CompletenessCardProps) {
+  const [open, setOpen] = useState(false);
+  const { percent, items, done, total, next } = completeness;
+  const complete = next === null;
+
+  return (
+    <section
+      className="pv-card"
+      style={{
+        background: COLORS.surface,
+        border: `1px solid ${complete ? COLORS.borderSubtle : COLORS.accent}`,
+        borderRadius: RADIUS.lg,
+        padding: '1.35rem',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <Ring percent={percent} />
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h2 style={{ color: COLORS.textPrimary, fontSize: '0.98rem', fontWeight: 700, margin: 0 }}>
+            {complete ? 'Your profile is complete' : 'Finish your profile'}
+          </h2>
+          <p style={{ color: COLORS.textMuted, fontSize: '0.78rem', margin: '0.2rem 0 0' }}>
+            {done} of {total} done
+          </p>
+        </div>
+      </div>
+
+      {next && (
+        <div
+          style={{
+            marginTop: '1rem',
+            padding: '0.85rem',
+            background: COLORS.accentSubtle,
+            borderRadius: RADIUS.md,
+          }}
+        >
+          <p style={{ color: COLORS.textPrimary, fontSize: '0.88rem', fontWeight: 600, margin: 0 }}>
+            {next.label}
+          </p>
+          <p style={{ color: COLORS.textSecondary, fontSize: '0.78rem', margin: '0.25rem 0 0.75rem', lineHeight: 1.45 }}>
+            {next.rationale}
+          </p>
+          <button
+            type="button"
+            className="pv-focusable"
+            onClick={() => onJump(next.target)}
+            style={{ ...buttonStyle('primary'), minHeight: 'auto', padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
+          >
+            Do it now
+          </button>
+        </div>
+      )}
+
+      <button
+        type="button"
+        className="pv-focusable"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.3rem',
+          background: 'none',
+          border: 'none',
+          color: COLORS.textMuted,
+          fontSize: '0.78rem',
+          cursor: 'pointer',
+          padding: '0.5rem 0 0',
+        }}
+      >
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ transform: open ? 'rotate(90deg)' : 'none', transition: `transform ${MOTION.fast}` }}
+          aria-hidden="true"
+        >
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+        {open ? 'Hide checklist' : 'Show checklist'}
+      </button>
+
+      {open && (
+        <ul style={{ listStyle: 'none', margin: '0.75rem 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          {items.map((item) => (
+            <li key={item.id}>
+              <button
+                type="button"
+                className="pv-focusable"
+                onClick={() => onJump(item.target)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  width: '100%',
+                  background: 'none',
+                  border: 'none',
+                  padding: '0.25rem 0',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  color: item.done ? COLORS.textMuted : COLORS.textSecondary,
+                  fontSize: '0.8rem',
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '1rem',
+                    height: '1rem',
+                    flexShrink: 0,
+                    borderRadius: '50%',
+                    border: `1.5px solid ${item.done ? COLORS.success : COLORS.border}`,
+                    background: item.done ? COLORS.success : 'transparent',
+                    color: COLORS.canvas,
+                  }}
+                >
+                  {item.done && (
+                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                  )}
+                </span>
+                <span style={{ textDecoration: item.done ? 'line-through' : 'none' }}>{item.label}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function Ring({ percent }: { percent: number }) {
+  const size = 52;
+  const stroke = 4;
+  const r = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * r;
+  const offset = circumference - (percent / 100) * circumference;
+
+  return (
+    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
+      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }} aria-hidden="true">
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={COLORS.surfaceRaised} strokeWidth={stroke} />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke={percent === 100 ? COLORS.success : COLORS.accent}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          style={{ transition: `stroke-dashoffset ${MOTION.slow} ${MOTION.ease}` }}
+        />
+      </svg>
+      <span
+        style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: COLORS.textPrimary,
+          fontSize: '0.78rem',
+          fontWeight: 700,
+        }}
+      >
+        {percent}%
+      </span>
+    </div>
+  );
+}

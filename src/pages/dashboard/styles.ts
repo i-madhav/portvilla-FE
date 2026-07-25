@@ -1,73 +1,78 @@
-// ─── Dashboard Design System ─────────────────────────────────────────────────
-// Reuses the app palette (from the onboarding design system) and layers on the
-// wider, multi-section dashboard layout.
+// ─── Dashboard layout ────────────────────────────────────────────────────────
+// Shared visual language lives in @shared-components/theme. This file holds only
+// what is specific to the dashboard shell.
 
 import type { CSSProperties } from 'react';
-import { COLORS } from '../onboarding/styles';
+import {
+  COLORS,
+  RADIUS,
+  SHADOW,
+  buttonStyle,
+  pillStyle as themePill,
+} from '@shared-components/theme';
 
-export { COLORS };
+export * from '@shared-components/theme';
 
 export const pageStyle: CSSProperties = {
-  background: COLORS.pageBg,
+  background: COLORS.canvas,
   minHeight: '100vh',
-  padding: '2rem 1rem 4rem',
+};
+
+/** Sidebar + content on wide screens; single column below. */
+export const shellStyle: CSSProperties = {
+  maxWidth: '76rem',
+  margin: '0 auto',
+  display: 'grid',
+  gap: '1.5rem',
+  padding: '1.5rem 1rem 4rem',
+  alignItems: 'start',
 };
 
 export const containerStyle: CSSProperties = {
-  maxWidth: '52rem',
-  margin: '0 auto',
   display: 'flex',
   flexDirection: 'column',
   gap: '1rem',
+  minWidth: 0,
 };
 
 export const cardStyle: CSSProperties = {
-  background: COLORS.cardBg,
-  borderRadius: '0.875rem',
-  padding: '1.5rem',
-  border: `1px solid ${COLORS.surfaceBorder}`,
+  background: COLORS.surface,
+  borderRadius: RADIUS.lg,
+  padding: '1.35rem',
+  border: `1px solid ${COLORS.borderSubtle}`,
+  boxShadow: SHADOW.sm,
 };
 
 export const sectionTitleStyle: CSSProperties = {
-  color: COLORS.primaryText,
-  fontSize: '1rem',
+  color: COLORS.textPrimary,
+  fontSize: '0.98rem',
   fontWeight: 700,
+  letterSpacing: '-0.01em',
   margin: 0,
 };
 
 export const sectionDescStyle: CSSProperties = {
-  color: COLORS.mutedText,
-  fontSize: '0.75rem',
-  margin: '0.15rem 0 0',
+  color: COLORS.textMuted,
+  fontSize: '0.78rem',
+  lineHeight: 1.45,
+  margin: '0.2rem 0 0',
 };
 
-export const pillStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '0.35rem',
-  padding: '0.25rem 0.625rem',
-  borderRadius: '999px',
-  background: COLORS.inputBg,
-  border: `1px solid ${COLORS.inputBorder}`,
-  color: COLORS.primaryText,
-  fontSize: '0.72rem',
-  fontWeight: 500,
-};
+/**
+ * Kept as a plain object — `display.tsx` and the sections spread it directly,
+ * whereas the theme's `pillStyle` is a tone-taking function.
+ */
+export const pillStyle: CSSProperties = themePill('neutral');
 
 export const smallButtonStyle = (variant: 'primary' | 'ghost' = 'ghost'): CSSProperties => ({
-  padding: '0.4rem 0.85rem',
-  borderRadius: '0.45rem',
-  fontSize: '0.75rem',
-  fontWeight: 600,
-  cursor: 'pointer',
-  border: variant === 'ghost' ? `1px solid ${COLORS.inputBorder}` : 'none',
-  background: variant === 'primary' ? COLORS.buttonBg : 'transparent',
-  color: variant === 'primary' ? COLORS.buttonText : COLORS.primaryText,
+  ...buttonStyle(variant === 'primary' ? 'primary' : 'secondary'),
+  padding: '0.4rem 0.8rem',
+  fontSize: '0.78rem',
+  minHeight: '2rem',
 });
 
 export const emptyTextStyle: CSSProperties = {
-  color: COLORS.mutedText,
-  fontSize: '0.8rem',
-  fontStyle: 'italic',
+  color: COLORS.textMuted,
+  fontSize: '0.82rem',
   margin: 0,
 };

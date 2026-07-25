@@ -1,9 +1,40 @@
-import { authClient, notifyUnauthorized } from '@app/lib/apiClient';
+import { apiClient, authClient, notifyUnauthorized } from '@app/lib/apiClient';
 import type {
   ProfileDataResponseDto,
   CreateProfilePayload,
   UpdateProfilePayload,
+  UsernameAvailabilityDto,
+  ResumeUploadResponseDto,
+  PublicProfileDto,
 } from '@typings/profileApi';
+
+// ─── Public endpoints ────────────────────────────────────────────────────────
+
+/**
+ * Check whether a username can be claimed. Public — it must be callable before
+ * a profile exists.
+ */
+export function checkUsernameAvailability(username: string): Promise<UsernameAvailabilityDto> {
+  return apiClient.get<UsernameAvailabilityDto>(
+    `/profiles/username-available?username=${encodeURIComponent(username)}`,
+  );
+}
+
+/**
+ * Fetch a public profile by username. Throws ApiError with status 404 (private
+ * or missing) or 401 (password-protected — the caller shows a gate).
+ */
+export function getPublicProfile(username: string): Promise<PublicProfileDto> {
+  return apiClient.get<PublicProfileDto>(`/profiles/public/${encodeURIComponent(username)}`);
+}
+
+/** Exchange a password for a protected profile. Throws ApiError 401 on a wrong password. */
+export function unlockPublicProfile(username: string, password: string): Promise<PublicProfileDto> {
+  return apiClient.post<PublicProfileDto>(
+    `/profiles/public/${encodeURIComponent(username)}/unlock`,
+    { password },
+  );
+}
 
 // ─── Authenticated endpoints (JWT required) ──────────────────────────────────
 
@@ -22,8 +53,14 @@ export function updateProfile(payload: UpdateProfilePayload): Promise<ProfileDat
   return authClient.patch<ProfileDataResponseDto>('/profiles/me', payload);
 }
 
-/** Upload a PDF resume. Field name must be 'resume'. */
-export function uploadResume(file: File): Promise<ProfileDataResponseDto> {
+/**
+ * Upload a PDF resume. Field name must be 'resume'.
+ *
+ * Returns the updated profile alongside any draft entries extracted from the
+ * document. `suggestions` is null when extraction is unavailable or the PDF
+ * carried no readable text.
+ */
+export function uploadResume(file: File): Promise<ResumeUploadResponseDto> {
   const formData = new FormData();
   formData.append('resume', file);
 

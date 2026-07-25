@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useToast } from '@app/providers/ToastContext';
 import { useAppDispatch } from '@stores/store';
 import {
@@ -15,7 +15,10 @@ import type {
   ProfileDataResponseDto,
   CreateProfilePayload,
   UpdateProfilePayload,
+  UsernameAvailabilityDto,
+  ResumeUploadResponseDto,
 } from '@typings/profileApi';
+import { validateUsername } from '@typings/profileApi';
 import {
   createProfile as createProfileApi,
   getOwnProfile,
@@ -23,6 +26,7 @@ import {
   uploadResume as uploadResumeApi,
   uploadProfileImage as uploadProfileImageApi,
   deleteProfile as deleteProfileApi,
+  checkUsernameAvailability,
 } from './profileApiFns';
 
 // ─── Query keys ──────────────────────────────────────────────────────────────
@@ -30,7 +34,65 @@ import {
 export const profileKeys = {
   all: ['profile'] as const,
   own: () => ['profile', 'own'] as const,
+  usernameAvailability: (u: string) => ['profile', 'username-available', u] as const,
 } as const;
+
+// ─── Username availability ───────────────────────────────────────────────────
+
+export type UsernameStatus =
+  | { state: 'idle' }
+  | { state: 'invalid'; message: string }
+  | { state: 'checking' }
+  | { state: 'available' }
+  | { state: 'unavailable'; message: string }
+  | { state: 'unknown' }; // server unreachable — never claim either way
+
+/**
+ * Debounced, server-backed availability check.
+ *
+ * The old Account step rendered "✓ Username is available" from *format*
+ * validation alone — it never asked the server, so it cheerfully told users a
+ * taken name was free and let them discover otherwise at submit, several steps
+ * later.
+ */
+export function useUsernameAvailability(username: string, debounceMs = 400): UsernameStatus {
+  const [debounced, setDebounced] = useState(username);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(username), debounceMs);
+    return () => clearTimeout(t);
+  }, [username, debounceMs]);
+
+  const local = validateUsername(debounced);
+  const shouldQuery = debounced.length >= 3 && local.valid;
+
+  const query = useQuery<UsernameAvailabilityDto, Error>({
+    queryKey: profileKeys.usernameAvailability(debounced),
+    queryFn: () => checkUsernameAvailability(debounced),
+    enabled: shouldQuery,
+    staleTime: 60_000,
+    retry: false,
+  });
+
+  if (username.length === 0) return { state: 'idle' };
+  // While the debounce settles, keep showing "checking" rather than a verdict
+  // computed from a stale value.
+  if (username !== debounced) return { state: 'checking' };
+  if (!local.valid) return { state: 'invalid', message: local.reason ?? 'Invalid username.' };
+  if (query.isFetching) return { state: 'checking' };
+  if (query.isError) return { state: 'unknown' };
+  if (!query.data) return { state: 'idle' };
+
+  if (query.data.available) return { state: 'available' };
+
+  const message =
+    query.data.reason === 'reserved'
+      ? 'That name is reserved. Pick another.'
+      : query.data.reason === 'invalid'
+        ? 'That username is not valid.'
+        : 'That username is taken.';
+  return { state: 'unavailable', message };
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -84,7 +146,6 @@ function useMutationCallbacks() {
  */
 export function useOwnProfileQuery(enabled: boolean = true) {
   const dispatch = useAppDispatch();
-  const { showToast } = useToast();
 
   return useQuery<ProfileDataResponseDto, Error>({
     queryKey: profileKeys.own(),
@@ -155,16 +216,22 @@ export function useUpdateProfile() {
   });
 }
 
-/** Upload a PDF resume. */
+/**
+ * Upload a PDF resume.
+ *
+ * Resolves with `{ profile, suggestions }`. Only `profile` is written to the
+ * store — `suggestions` are drafts the caller shows for review, so persisting
+ * them here would be the silent write the whole design avoids.
+ */
 export function useUploadResume() {
   const { onMutateStart, onMutationSuccess, onMutationError } = useMutationCallbacks();
   const queryClient = useQueryClient();
 
-  return useMutation<ProfileDataResponseDto, Error, File>({
+  return useMutation<ResumeUploadResponseDto, Error, File>({
     mutationFn: (file) => uploadResumeApi(file),
     onMutate: onMutateStart,
     onSuccess: (data) => {
-      onMutationSuccess(data, 'Resume uploaded');
+      onMutationSuccess(data.profile, 'Resume uploaded');
       queryClient.invalidateQueries({ queryKey: profileKeys.own() });
     },
     onError: (error) => {

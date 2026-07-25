@@ -32,7 +32,7 @@ export function EditableSection({
   const [editing, setEditing] = useState(false);
 
   return (
-    <section style={cardStyle}>
+    <section className="pv-card" style={cardStyle}>
       <header
         style={{
           display: 'flex',

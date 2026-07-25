@@ -1,12 +1,18 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@stores/store';
 import { logout } from '@stores/authSlice';
 import { ROUTES } from '@routes/index';
 import { useOwnProfileQuery, useUpdateProfile } from '@api-hooks/profile/useProfileHooks';
 import type { UpdateProfilePayload } from '@typings/profileApi';
+import { publicProfileLabel, publicProfileUrl } from '@app/lib/publicProfile';
 
-import { pageStyle, containerStyle, cardStyle, COLORS, smallButtonStyle } from './styles';
+import { pageStyle, shellStyle, containerStyle, COLORS } from './styles';
+import { ProfileHero } from './components/ProfileHero';
+import { CompletenessCard } from './components/CompletenessCard';
+import { ActivityCard } from './components/ActivityCard';
+import { DashboardNav, type NavItem, type NavAccount } from './components/DashboardNav';
+import { useProfileCompleteness } from './useProfileCompleteness';
 import { IdentitySection } from './sections/IdentitySection';
 import { CapabilitiesSection } from './sections/CapabilitiesSection';
 import { TimelineSection } from './sections/TimelineSection';
@@ -14,6 +20,8 @@ import { WorksSection } from './sections/WorksSection';
 import { SocialSection } from './sections/SocialSection';
 import { AgentConfigSection } from './sections/AgentConfigSection';
 import { ExtraSections } from './sections/ExtraSections';
+
+const SECTION_IDS = ['identity', 'capabilities', 'timeline', 'works', 'social', 'agent', 'more'];
 
 export function DashboardPage() {
   const navigate = useNavigate();
@@ -31,12 +39,42 @@ export function DashboardPage() {
     [updateMutation],
   );
 
-  // No profile (e.g. 404) → send the user through onboarding.
+  const completeness = useProfileCompleteness(profile);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
   useEffect(() => {
-    if (!query.isLoading && !profile) {
-      navigate(ROUTES.ONBOARDING, { replace: true });
-    }
+    if (!query.isLoading && !profile) navigate(ROUTES.ONBOARDING, { replace: true });
   }, [query.isLoading, profile, navigate]);
+
+  // Highlights whichever section the reader is actually looking at. rootMargin
+  // biases toward the upper third so the active item changes when a section
+  // reaches reading position, not when it first peeks into view.
+  useEffect(() => {
+    if (!profile) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (visible) setActiveId(visible.target.id);
+      },
+      { rootMargin: '-10% 0px -70% 0px', threshold: 0 },
+    );
+
+    SECTION_IDS.forEach((id) => {
+      const el = sectionRefs.current[id];
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, [profile]);
+
+  const jumpTo = useCallback((id: string) => {
+    const el = sectionRefs.current[id];
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setActiveId(id);
+  }, []);
 
   const handleLogout = useCallback(() => {
     void dispatch(logout());
@@ -47,83 +85,80 @@ export function DashboardPage() {
     return (
       <div style={{ ...pageStyle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div
+          aria-label="Loading"
           style={{
             width: '1.75rem',
             height: '1.75rem',
             borderRadius: '50%',
-            border: `2px solid ${COLORS.inputBorder}`,
-            borderTopColor: COLORS.primaryText,
-            animation: 'spin 0.8s linear infinite',
+            border: `2px solid ${COLORS.borderSubtle}`,
+            borderTopColor: COLORS.accent,
+            animation: 'spin 0.7s linear infinite',
           }}
         />
       </div>
     );
   }
 
-  const id = profile.identity;
-  const initial = (id.name || profile.username || '?').charAt(0).toUpperCase();
+  const incompleteTargets = new Set(completeness.items.filter((i) => !i.done).map((i) => i.target));
+
+  const navItems: NavItem[] = [
+    { id: 'identity', label: 'Identity' },
+    { id: 'capabilities', label: 'Skills' },
+    { id: 'timeline', label: 'Journey' },
+    { id: 'works', label: 'Work' },
+    { id: 'social', label: 'Contact' },
+    { id: 'agent', label: 'AI agent' },
+    { id: 'more', label: 'More' },
+  ].map((i) => ({ ...i, needsAttention: incompleteTargets.has(i.id) }));
+
+  const account: NavAccount = {
+    name: profile.identity.name || '',
+    handle: publicProfileLabel(profile.username),
+    image: profile.identity.primaryImage,
+    url: publicProfileUrl(profile.username),
+  };
+
+  const setRef = (id: string) => (el: HTMLDivElement | null) => {
+    sectionRefs.current[id] = el;
+  };
 
   return (
     <div style={pageStyle}>
-      <div style={containerStyle}>
-        {/* Header */}
-        <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div
-            style={{
-              width: '3.25rem',
-              height: '3.25rem',
-              borderRadius: '0.75rem',
-              flexShrink: 0,
-              background: COLORS.inputBg,
-              border: `1px solid ${COLORS.inputBorder}`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              overflow: 'hidden',
-              color: COLORS.primaryText,
-              fontSize: '1.4rem',
-              fontWeight: 700,
-            }}
-          >
-            {id.primaryImage ? (
-              <img src={id.primaryImage} alt={id.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : (
-              initial
-            )}
+      <div className="pv-dashboard-shell" style={shellStyle}>
+        <DashboardNav items={navItems} activeId={activeId} onSelect={jumpTo} account={account} />
+
+        <div style={containerStyle}>
+          <ProfileHero profile={profile} onLogout={handleLogout} />
+
+          <div className="pv-overview-grid">
+            <CompletenessCard completeness={completeness} onJump={jumpTo} />
+            <ActivityCard enabled={!!accessToken} />
           </div>
 
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <h1 style={{ color: COLORS.primaryText, fontSize: '1.15rem', fontWeight: 700, margin: 0 }}>
-              {id.name || 'Unnamed profile'}
-            </h1>
-            <div style={{ color: COLORS.mutedText, fontSize: '0.78rem' }}>
-              portvilla.in/{profile.username}
-              {id.availability && (
-                <span style={{ color: COLORS.secondaryText }}> · {id.availability}</span>
-              )}
+          <div className="pv-section-grid">
+            <div id="identity" ref={setRef('identity')} className="pv-span-2" style={{ scrollMarginTop: '1.5rem' }}>
+              <IdentitySection profile={profile} save={save} />
             </div>
-            {id.tagline && (
-              <div style={{ color: COLORS.secondaryText, fontSize: '0.8rem', marginTop: '0.15rem' }}>{id.tagline}</div>
-            )}
+            <div id="capabilities" ref={setRef('capabilities')} style={{ scrollMarginTop: '1.5rem' }}>
+              <CapabilitiesSection profile={profile} save={save} />
+            </div>
+            <div id="timeline" ref={setRef('timeline')} style={{ scrollMarginTop: '1.5rem' }}>
+              <TimelineSection profile={profile} save={save} />
+            </div>
+            <div id="works" ref={setRef('works')} className="pv-span-2" style={{ scrollMarginTop: '1.5rem' }}>
+              <WorksSection profile={profile} save={save} />
+            </div>
+            <div id="social" ref={setRef('social')} style={{ scrollMarginTop: '1.5rem' }}>
+              <SocialSection profile={profile} save={save} />
+            </div>
+            <div id="agent" ref={setRef('agent')} style={{ scrollMarginTop: '1.5rem' }}>
+              <AgentConfigSection profile={profile} save={save} />
+            </div>
+            <div id="more" ref={setRef('more')} className="pv-span-2" style={{ scrollMarginTop: '1.5rem' }}>
+              <ExtraSections profile={profile} />
+            </div>
           </div>
-
-          <button type="button" style={smallButtonStyle('ghost')} onClick={handleLogout}>
-            Log out
-          </button>
         </div>
-
-        {/* Editable sections */}
-        <IdentitySection profile={profile} save={save} />
-        <CapabilitiesSection profile={profile} save={save} />
-        <TimelineSection profile={profile} save={save} />
-        <WorksSection profile={profile} save={save} />
-        <SocialSection profile={profile} save={save} />
-
-        {/* Agent configuration */}
-        <AgentConfigSection profile={profile} save={save} />
-
-        {/* Read-only sections (editing is a follow-up) */}
-        <ExtraSections profile={profile} />
       </div>
     </div>
   );

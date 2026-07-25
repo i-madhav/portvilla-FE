@@ -6,14 +6,8 @@ import type {
   AgentTechnicalDepth,
   AgentSpeakingSpeed,
 } from '@typings/profileApi';
-import {
-  LlmProvider as Provider,
-  AgentTone as Tone,
-  AgentVerbosity as Verbosity,
-  AgentTechnicalDepth as Depth,
-  AgentSpeakingSpeed as Speed,
-} from '@typings/profileApi';
-import { labelStyle, inputStyle, selectStyle } from '@pages/onboarding/styles';
+import { LlmProvider as Provider } from '@typings/profileApi';
+import { labelStyle, inputStyle, selectStyle } from '@shared-components/theme';
 import { EditableSection } from '../components/EditableSection';
 import { EditActions } from '../components/EditActions';
 import { KeyValue } from '../components/display';
@@ -43,10 +37,10 @@ const SPEED_LABELS: Record<AgentSpeakingSpeed, string> = { slow: 'Slow', normal:
 /** Renders the two agent-configuration cards: LLM connection + voice persona. */
 export function AgentConfigSection({ profile, save }: SectionProps) {
   return (
-    <>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <AiProviderCard profile={profile} save={save} />
       <VoicePersonaCard profile={profile} save={save} />
-    </>
+    </div>
   );
 }
 
@@ -66,7 +60,7 @@ function AiProviderCard({ profile, save }: SectionProps) {
           <KeyValue
             label="API key"
             value={
-              <span style={{ color: ai.apiKeyConfigured ? COLORS.successText : COLORS.mutedText }}>
+              <span style={{ color: ai.apiKeyConfigured ? COLORS.success : COLORS.textMuted }}>
                 {ai.apiKeyConfigured ? '✓ Configured' : 'Not set'}
               </span>
             }
@@ -127,17 +121,17 @@ function AiProviderEdit({
       </select>
 
       <label style={miniLabel}>Model</label>
-      <input value={model} onChange={(e) => setModel(e.target.value)} style={inputStyle(false)} placeholder="e.g. gpt-4o, claude-sonnet-4.5" />
+      <input value={model} onChange={(e) => setModel(e.target.value)} style={inputStyle()} placeholder="e.g. gpt-4o, claude-sonnet-4.5" />
 
       <label style={miniLabel}>Base URL</label>
-      <input value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} style={inputStyle(false)} placeholder="Optional — for custom / self-hosted" />
+      <input value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} style={inputStyle()} placeholder="Optional — for custom / self-hosted" />
 
       <label style={miniLabel}>API key</label>
       <input
         type="password"
         value={apiKey}
         onChange={(e) => setApiKey(e.target.value)}
-        style={inputStyle(false)}
+        style={inputStyle()}
         placeholder={ai.apiKeyConfigured ? '•••••••• (leave blank to keep)' : 'Paste your API key'}
         autoComplete="off"
       />
@@ -228,7 +222,7 @@ function VoicePersonaEdit({
   return (
     <form onSubmit={submit}>
       <label style={{ ...miniLabel, marginTop: 0 }}>Agent name</label>
-      <input value={agentName} onChange={(e) => setAgentName(e.target.value)} style={inputStyle(!agentName.trim())} maxLength={32} />
+      <input value={agentName} onChange={(e) => setAgentName(e.target.value)} style={inputStyle(agentName.trim() ? 'default' : 'error')} maxLength={32} />
 
       <label style={miniLabel}>Tone</label>
       <Select value={tone} onChange={(v) => setTone(v as AgentTone)} options={labelsToOptions(TONE_LABELS)} />

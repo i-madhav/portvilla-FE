@@ -370,13 +370,110 @@ export interface ProfileDataResponseDto {
 
 // ─── Username validation ──────────────────────────────────────────────────────
 
-/** Reserved slugs that the server rejects as usernames. */
+/**
+ * Reserved slugs the server rejects as usernames.
+ *
+ * This list must stay in step with `RESERVED_USERNAMES` in the backend's
+ * `profile.service.ts`, and must contain every top-level frontend route — a
+ * username that shadows a route produces a profile nobody can ever open.
+ * The server is the authority; `checkUsernameAvailability` is what the UI
+ * trusts. This copy only exists to fail fast while typing.
+ */
 export const RESERVED_USERNAMES = new Set([
-  'admin', 'api', 'auth', 'me', 'dashboard', 'login', 'register',
+  'admin', 'api', 'auth', 'app', 'me', 'dashboard', 'login', 'register',
   'signup', 'logout', 'profile', 'user', 'users', 'health', 'static',
-  'public', 'private', 'support', 'help', 'about', 'contact', 'terms',
-  'privacy',
+  'public', 'private', 'settings', 'support', 'help', 'about', 'contact',
+  'terms', 'privacy',
+  // Top-level routes in @routes/index — claimable until now, and permanently
+  // unreachable if claimed.
+  'onboarding', 'forgot-password', 'reset-password', 'verify-email',
 ]);
+
+/** Result of the server-side availability check. */
+export interface UsernameAvailabilityDto {
+  available: boolean;
+  reason: 'taken' | 'reserved' | 'invalid' | null;
+}
+
+// ─── Resume parsing ───────────────────────────────────────────────────────────
+
+/**
+ * Draft entries extracted from an uploaded resume.
+ *
+ * These are *candidates*, never writes. The server does not persist them — the
+ * user reviews and confirms each one. A model's guess about someone's
+ * employment history is not a fact until they say it is.
+ */
+export interface ResumeSuggestionsDto {
+  identity: {
+    tagline: string | null;
+    bio: string | null;
+    location: string | null;
+    industry: string | null;
+  } | null;
+  capabilities: CapabilityEntryDto[];
+  timeline: TimelineEntryDto[];
+  works: WorkEntryDto[];
+}
+
+export interface ResumeUploadResponseDto {
+  profile: ProfileDataResponseDto;
+  /** `null` when extraction is unavailable or the PDF yielded no usable text. */
+  suggestions: ResumeSuggestionsDto | null;
+}
+
+// ─── Public profile (anonymous view) ──────────────────────────────────────────
+
+/** Identity as an anonymous visitor sees it — no resume. */
+export interface PublicIdentityDto {
+  entityType: EntityType;
+  name: string;
+  tagline: string | null;
+  bio: string | null;
+  about: string | null;
+  primaryImage: string | null;
+  coverImage: string | null;
+  location: string | null;
+  foundedOrBorn: string | null;
+  industry: string | null;
+  availability: string | null;
+}
+
+/**
+ * The allowlisted public profile. Mirrors the backend's
+ * PublicProfileResponseDto — no aiSettings, no resume, no email/phone.
+ */
+export interface PublicProfileDto {
+  username: string;
+  visibility: ProfileVisibility;
+  identity: PublicIdentityDto;
+  works: WorkEntryDto[];
+  timeline: TimelineEntryDto[];
+  capabilities: CapabilityEntryDto[];
+  offerings: OfferingEntryDto[];
+  metrics: MetricEntryDto[];
+  testimonials: TestimonialEntryDto[];
+  team: TeamMemberEntryDto[];
+  media: MediaEntryDto[];
+  content: ContentEntryDto[];
+  social: { links: { platform: string; url: string; label: string | null }[]; calendarUrl: string | null };
+  agentName: string;
+}
+
+// ─── Session activity ─────────────────────────────────────────────────────────
+
+export interface SessionActivityDto {
+  totals: { conversations: number; totalDurationSec: number; avgDurationSec: number | null };
+  last7d: { conversations: number; deltaVsPrior7d: number };
+  recent: {
+    id: string;
+    startedAt: string;
+    durationSec: number | null;
+    status: 'pending' | 'active' | 'ended';
+    type: 'guest' | 'user';
+  }[];
+  daily: { date: string; count: number }[];
+}
 
 export const USERNAME_REGEX = /^[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$/;
 

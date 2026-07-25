@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { TimelineEntryDto, TimelineCategory } from '@typings/profileApi';
 import { TimelineCategory as Category } from '@typings/profileApi';
-import { labelStyle, inputStyle, textareaStyle, selectStyle } from '@pages/onboarding/styles';
+import { labelStyle, inputStyle, textareaStyle, selectStyle } from '@shared-components/theme';
 import { RepeatableList } from '@shared-components/forms/RepeatableList';
 import { EditableSection } from '../components/EditableSection';
 import { EditActions } from '../components/EditActions';
@@ -47,13 +47,13 @@ export function TimelineSection({ profile, save }: SectionProps) {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {timeline.map((t, i) => (
-              <div key={i} style={{ borderLeft: `2px solid ${COLORS.inputBorder}`, paddingLeft: '0.75rem' }}>
-                <div style={{ color: COLORS.primaryText, fontSize: '0.85rem', fontWeight: 600 }}>{t.label}</div>
-                <div style={{ color: COLORS.mutedText, fontSize: '0.72rem' }}>
+              <div key={i} style={{ borderLeft: `2px solid ${COLORS.border}`, paddingLeft: '0.75rem' }}>
+                <div style={{ color: COLORS.textPrimary, fontSize: '0.85rem', fontWeight: 600 }}>{t.label}</div>
+                <div style={{ color: COLORS.textMuted, fontSize: '0.72rem' }}>
                   {[t.organization, range(t)].filter(Boolean).join(' · ')}
                 </div>
                 {t.description && (
-                  <div style={{ color: COLORS.secondaryText, fontSize: '0.75rem', marginTop: '0.2rem' }}>
+                  <div style={{ color: COLORS.textSecondary, fontSize: '0.75rem', marginTop: '0.2rem' }}>
                     {t.description}
                   </div>
                 )}
@@ -123,18 +123,18 @@ function TimelineEdit({
                 <input
                   value={item.organization ?? ''}
                   onChange={(e) => update({ organization: e.target.value || null })}
-                  style={inputStyle(false)}
+                  style={inputStyle()}
                 />
               </div>
             </div>
             <div>
               <label style={miniLabel}>Title / Label</label>
-              <input value={item.label} onChange={(e) => update({ label: e.target.value })} style={inputStyle(false)} />
+              <input value={item.label} onChange={(e) => update({ label: e.target.value })} style={inputStyle()} />
             </div>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <div style={{ flex: 1 }}>
                 <label style={miniLabel}>Start</label>
-                <input type="month" value={item.date} onChange={(e) => update({ date: e.target.value })} style={inputStyle(false)} />
+                <input type="month" value={item.date} onChange={(e) => update({ date: e.target.value })} style={inputStyle()} />
               </div>
               <div style={{ flex: 1 }}>
                 <label style={miniLabel}>End (blank = present)</label>
@@ -142,7 +142,7 @@ function TimelineEdit({
                   type="month"
                   value={item.endDate ?? ''}
                   onChange={(e) => update({ endDate: e.target.value || null })}
-                  style={inputStyle(false)}
+                  style={inputStyle()}
                 />
               </div>
             </div>
@@ -151,7 +151,7 @@ function TimelineEdit({
               <textarea
                 value={item.description ?? ''}
                 onChange={(e) => update({ description: e.target.value || null })}
-                style={textareaStyle(false)}
+                style={textareaStyle()}
                 rows={2}
               />
             </div>

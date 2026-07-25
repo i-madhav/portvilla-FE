@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { SocialDto } from '@typings/profileApi';
-import { labelStyle, inputStyle } from '@pages/onboarding/styles';
+import { labelStyle, inputStyle } from '@shared-components/theme';
 import { RepeatableList } from '@shared-components/forms/RepeatableList';
 import { EditableSection } from '../components/EditableSection';
 import { EditActions } from '../components/EditActions';
@@ -32,7 +32,7 @@ export function SocialSection({ profile, save }: SectionProps) {
                 key={i}
                 label={l.platform}
                 value={
-                  <a href={l.url} target="_blank" rel="noreferrer" style={{ color: COLORS.secondaryText }}>
+                  <a href={l.url} target="_blank" rel="noreferrer" style={{ color: COLORS.textSecondary }}>
                     {l.url}
                   </a>
                 }
@@ -98,11 +98,11 @@ function SocialEdit({
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <div style={{ flex: 1 }}>
               <label style={miniLabel}>Platform</label>
-              <input value={item.platform} onChange={(e) => update({ platform: e.target.value })} style={inputStyle(false)} />
+              <input value={item.platform} onChange={(e) => update({ platform: e.target.value })} style={inputStyle()} />
             </div>
             <div style={{ flex: 1.6 }}>
               <label style={miniLabel}>URL</label>
-              <input value={item.url} onChange={(e) => update({ url: e.target.value })} style={inputStyle(false)} placeholder="https://…" />
+              <input value={item.url} onChange={(e) => update({ url: e.target.value })} style={inputStyle()} placeholder="https://…" />
             </div>
           </div>
         )}
@@ -111,16 +111,16 @@ function SocialEdit({
       <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem' }}>
         <div style={{ flex: 1 }}>
           <label style={miniLabel}>Email</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle(false)} />
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle()} />
         </div>
         <div style={{ flex: 1 }}>
           <label style={miniLabel}>Phone</label>
-          <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} style={inputStyle(false)} />
+          <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} style={inputStyle()} />
         </div>
       </div>
 
       <label style={{ ...miniLabel, marginTop: '0.75rem' }}>Scheduling link</label>
-      <input type="url" value={calendarUrl} onChange={(e) => setCalendarUrl(e.target.value)} style={inputStyle(false)} placeholder="https://cal.com/you" />
+      <input type="url" value={calendarUrl} onChange={(e) => setCalendarUrl(e.target.value)} style={inputStyle()} placeholder="https://cal.com/you" />
 
       <EditActions onCancel={done} saving={saving} />
     </form>

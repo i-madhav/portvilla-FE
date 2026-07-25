@@ -1,34 +1,23 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import type { EntityType } from '@typings/profileApi';
 import { EntityType as EntityTypeEnum } from '@typings/profileApi';
+import { StepActions } from '../components/StepActions';
+import { StepHeader } from '../components/StepHeader';
+import type { IdentityStepData } from '../useOnboardingFlow';
 import {
-  titleStyle,
-  subtitleStyle,
-  labelStyle,
+  COLORS,
+  MOTION,
   inputStyle,
   textareaStyle,
   selectStyle,
+  labelStyle,
   fieldGroupStyle,
-  primaryButtonStyle,
-  ghostButtonStyle,
-  COLORS,
 } from '../styles';
-
-export interface IdentityStepData {
-  name: string;
-  entityType: EntityType;
-  tagline: string;
-  bio: string;
-  about: string;
-  location: string;
-  industry: string;
-  availability: string;
-}
 
 interface IdentityStepProps {
   initial: IdentityStepData;
   onContinue: (data: IdentityStepData) => void;
-  onBack: () => void;
+  busy: boolean;
 }
 
 const ENTITY_OPTIONS: { value: EntityType; label: string }[] = [
@@ -40,177 +29,243 @@ const ENTITY_OPTIONS: { value: EntityType; label: string }[] = [
 
 function Field({
   label,
-  required,
+  htmlFor,
+  optional,
+  hint,
   children,
 }: {
   label: string;
-  required?: boolean;
+  htmlFor: string;
+  optional?: boolean;
+  hint?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div style={fieldGroupStyle('1.125rem')}>
-      <label style={labelStyle}>
+    <div style={fieldGroupStyle()}>
+      <label style={labelStyle} htmlFor={htmlFor}>
         {label}
-        <span
-          style={{
-            color: COLORS.mutedText,
-            fontSize: '0.65rem',
-            fontWeight: 400,
-            marginLeft: '0.25rem',
-          }}
-        >
-          {required ? '*' : '(optional)'}
-        </span>
+        {optional && (
+          <span style={{ color: COLORS.textMuted, fontWeight: 400, marginLeft: '0.3rem' }}>
+            optional
+          </span>
+        )}
       </label>
       {children}
+      {hint && (
+        <p style={{ color: COLORS.textMuted, fontSize: '0.73rem', margin: '0.35rem 0 0' }}>{hint}</p>
+      )}
     </div>
   );
 }
 
-export function IdentityStep({ initial, onContinue, onBack }: IdentityStepProps) {
+export function IdentityStep({ initial, onContinue, busy }: IdentityStepProps) {
   const [data, setData] = useState<IdentityStepData>(initial);
+  // Seven fields at once read as a wall. Only `name` is actually required, so
+  // the rest of the long tail stays folded until asked for.
+  const [expanded, setExpanded] = useState(
+    () => !!(initial.about || initial.location || initial.industry || initial.availability),
+  );
 
   const set = <K extends keyof IdentityStepData>(key: K, value: IdentityStepData[K]) =>
     setData((prev) => ({ ...prev, [key]: value }));
 
-  const canContinue = data.name.trim().length > 0;
-
-  const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      if (data.name.trim().length === 0) return;
-      onContinue({
-        ...data,
-        name: data.name.trim(),
-        tagline: data.tagline.trim(),
-        bio: data.bio.trim(),
-        about: data.about.trim(),
-        location: data.location.trim(),
-        industry: data.industry.trim(),
-        availability: data.availability.trim(),
-      });
-    },
-    [data, onContinue],
-  );
-
+  const canContinue = data.name.trim().length > 0 && !busy;
   const isIndividual = data.entityType === EntityTypeEnum.Individual;
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h1 style={titleStyle}>Introduce yourself</h1>
-      <p style={subtitleStyle}>
-        This is what visitors — and your AI agent — will know about you first.
-      </p>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!canContinue) return;
+        onContinue(data);
+      }}
+    >
+      <StepHeader
+        title="Introduce yourself"
+        subtitle="The basics your visitors — and your AI agent — will lead with."
+      />
 
-      <Field label="Profile type" required>
+      <Field label="This profile is for" htmlFor="pv-entity">
         <select
+          id="pv-entity"
+          className="pv-field"
           value={data.entityType}
           onChange={(e) => set('entityType', e.target.value as EntityType)}
           style={selectStyle()}
         >
-          {ENTITY_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
+          {ENTITY_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
             </option>
           ))}
         </select>
       </Field>
 
-      <Field label={isIndividual ? 'Your name' : 'Name / Brand'} required>
+      <Field label={isIndividual ? 'Your name' : 'Name'} htmlFor="pv-name">
         <input
+          id="pv-name"
+          className="pv-field"
           type="text"
           required
           value={data.name}
           onChange={(e) => set('name', e.target.value)}
-          style={inputStyle(false)}
-          placeholder={isIndividual ? 'e.g. Jane Doe' : 'e.g. Acme Corp'}
+          style={inputStyle()}
+          placeholder={isIndividual ? 'Jane Doe' : 'Acme Corp'}
           autoFocus
         />
       </Field>
 
-      <Field label="Tagline">
+      <Field
+        label="Tagline"
+        htmlFor="pv-tagline"
+        optional
+        hint="One line. This sits directly under your name."
+      >
         <input
+          id="pv-tagline"
+          className="pv-field"
           type="text"
           value={data.tagline}
           onChange={(e) => set('tagline', e.target.value)}
-          style={inputStyle(false)}
-          placeholder="Full-stack engineer · Designer · Creator"
+          style={inputStyle()}
+          placeholder="Full-stack engineer building developer tools"
           maxLength={120}
         />
       </Field>
 
-      <Field label="Bio">
+      <Field
+        label="Short bio"
+        htmlFor="pv-bio"
+        optional
+        hint="Your agent uses this to introduce you. A couple of sentences is plenty."
+      >
         <textarea
+          id="pv-bio"
+          className="pv-field"
           value={data.bio}
           onChange={(e) => set('bio', e.target.value)}
-          style={textareaStyle(false)}
-          placeholder="A short professional summary…"
+          style={textareaStyle()}
+          placeholder="I design and build systems that…"
           rows={3}
           maxLength={500}
         />
       </Field>
 
-      <Field label="About">
-        <textarea
-          value={data.about}
-          onChange={(e) => set('about', e.target.value)}
-          style={textareaStyle(false)}
-          placeholder="A longer story — background, what drives you, what you're building…"
-          rows={4}
-          maxLength={2000}
-        />
-      </Field>
-
-      <div style={{ display: 'flex', gap: '0.75rem' }}>
-        <div style={{ flex: 1 }}>
-          <Field label="Location">
-            <input
-              type="text"
-              value={data.location}
-              onChange={(e) => set('location', e.target.value)}
-              style={inputStyle(false)}
-              placeholder="e.g. Berlin, DE"
-            />
-          </Field>
-        </div>
-        <div style={{ flex: 1 }}>
-          <Field label="Industry">
-            <input
-              type="text"
-              value={data.industry}
-              onChange={(e) => set('industry', e.target.value)}
-              style={inputStyle(false)}
-              placeholder="e.g. Fintech"
-            />
-          </Field>
-        </div>
-      </div>
-
-      <Field label="Availability">
-        <input
-          type="text"
-          value={data.availability}
-          onChange={(e) => set('availability', e.target.value)}
-          style={inputStyle(false)}
-          placeholder="e.g. Open to freelance · Hiring · Not available"
-        />
-      </Field>
-
-      <div
+      <button
+        type="button"
+        className="pv-focusable"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
         style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.5rem',
-          marginTop: '1.5rem',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.35rem',
+          background: 'none',
+          border: 'none',
+          color: COLORS.textMuted,
+          fontSize: '0.8rem',
+          cursor: 'pointer',
+          padding: '0.35rem 0',
+          transition: `color ${MOTION.fast}`,
         }}
+        onMouseEnter={(e) => (e.currentTarget.style.color = COLORS.textSecondary)}
+        onMouseLeave={(e) => (e.currentTarget.style.color = COLORS.textMuted)}
       >
-        <button type="submit" disabled={!canContinue} style={primaryButtonStyle(!canContinue)}>
-          Continue
-        </button>
-        <button type="button" onClick={onBack} style={ghostButtonStyle()}>
-          ← Back
-        </button>
-      </div>
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{
+            transform: expanded ? 'rotate(90deg)' : 'none',
+            transition: `transform ${MOTION.fast}`,
+          }}
+          aria-hidden="true"
+        >
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+        {expanded ? 'Fewer details' : 'Add location, industry, availability'}
+      </button>
+
+      {expanded && (
+        <div style={{ marginTop: '1rem' }}>
+          <Field label="About" htmlFor="pv-about" optional hint="The longer story, if you want one.">
+            <textarea
+              id="pv-about"
+              className="pv-field"
+              value={data.about}
+              onChange={(e) => set('about', e.target.value)}
+              style={textareaStyle()}
+              placeholder="Background, what drives you, what you're building…"
+              rows={4}
+              maxLength={2000}
+            />
+          </Field>
+
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <div style={{ flex: '1 1 10rem', minWidth: 0 }}>
+              <Field label="Location" htmlFor="pv-location" optional>
+                <input
+                  id="pv-location"
+                  className="pv-field"
+                  type="text"
+                  value={data.location}
+                  onChange={(e) => set('location', e.target.value)}
+                  style={inputStyle()}
+                  placeholder="Berlin, DE"
+                />
+              </Field>
+            </div>
+            <div style={{ flex: '1 1 10rem', minWidth: 0 }}>
+              <Field label="Industry" htmlFor="pv-industry" optional>
+                <input
+                  id="pv-industry"
+                  className="pv-field"
+                  type="text"
+                  value={data.industry}
+                  onChange={(e) => set('industry', e.target.value)}
+                  style={inputStyle()}
+                  placeholder="Fintech"
+                />
+              </Field>
+            </div>
+          </div>
+
+          <Field
+            label="Availability"
+            htmlFor="pv-availability"
+            optional
+            hint="Shown as a badge on your profile."
+          >
+            <input
+              id="pv-availability"
+              className="pv-field"
+              type="text"
+              value={data.availability}
+              onChange={(e) => set('availability', e.target.value)}
+              style={inputStyle()}
+              placeholder="Open to freelance"
+            />
+          </Field>
+        </div>
+      )}
+
+      <StepActions
+        continueLabel="Create my profile"
+        disabled={!canContinue}
+        busy={busy}
+        disabledHint="Add your name to continue."
+      />
+
+      {/* The point where this stops being a form and starts being a real record.
+          Deliberately says "created", not "live" — visibility may be private. */}
+      <p style={{ color: COLORS.textMuted, fontSize: '0.73rem', margin: '0.75rem 0 0', textAlign: 'center' }}>
+        Your profile is created here. Everything after this saves as you go.
+      </p>
     </form>
   );
 }

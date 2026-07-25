@@ -5,17 +5,22 @@ import { authRoutes } from './auth.routes';
 import { publicRoutes } from './publicRoutes';
 import { onboardingRoutes } from './onboarding.routes';
 import { dashboardRoutes } from './dashboard.routes';
+import { publicProfileRoutes } from './publicProfile.routes';
 
-// Combine route modules — more will be added as features grow
+// Combine route modules — more will be added as features grow.
+// publicProfileRoutes (/:username) stays last: React Router ranks static paths
+// above the dynamic segment, but keeping it last makes the "match everything
+// else as a username" intent explicit.
 export const routes: RouteObject[] = [
   ...publicRoutes,
   ...authRoutes,
   ...onboardingRoutes,
   ...dashboardRoutes,
+  ...publicProfileRoutes,
 ];
 
 // Export individual route modules for testing or specific use cases
-export { authRoutes, publicRoutes, onboardingRoutes, dashboardRoutes };
+export { authRoutes, publicRoutes, onboardingRoutes, dashboardRoutes, publicProfileRoutes };
 
 // Route configuration constants
 export const ROUTES = {

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { CapabilityEntryDto, CapabilityProficiency } from '@typings/profileApi';
 import { CapabilityProficiency as Proficiency } from '@typings/profileApi';
-import { labelStyle, inputStyle, selectStyle } from '@pages/onboarding/styles';
+import { labelStyle, inputStyle, selectStyle } from '@shared-components/theme';
 import { RepeatableList } from '@shared-components/forms/RepeatableList';
 import { EditableSection } from '../components/EditableSection';
 import { EditActions } from '../components/EditActions';
@@ -43,7 +43,7 @@ export function CapabilitiesSection({ profile, save }: SectionProps) {
               <span key={`${c.name}-${i}`} style={pillStyle}>
                 {c.name}
                 {c.proficiency && (
-                  <span style={{ color: COLORS.mutedText, fontSize: '0.65rem' }}>· {c.proficiency}</span>
+                  <span style={{ color: COLORS.textMuted, fontSize: '0.65rem' }}>· {c.proficiency}</span>
                 )}
               </span>
             ))}
@@ -96,7 +96,7 @@ function CapabilitiesEdit({
               <input
                 value={item.name}
                 onChange={(e) => update({ name: e.target.value })}
-                style={inputStyle(false)}
+                style={inputStyle()}
                 placeholder="e.g. React"
               />
             </div>
@@ -106,7 +106,7 @@ function CapabilitiesEdit({
                 <input
                   value={item.category ?? ''}
                   onChange={(e) => update({ category: e.target.value || null })}
-                  style={inputStyle(false)}
+                  style={inputStyle()}
                 />
               </div>
               <div style={{ flex: 1 }}>
