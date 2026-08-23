@@ -4,6 +4,7 @@ import { useAppSelector } from '@stores/store';
 import { ROUTES } from '@routes/index';
 import { useOwnProfileQuery } from '@api-hooks/profile/useProfileHooks';
 import type { ResumeSuggestionsDto } from '@typings/profileApi';
+import { Brand } from '@shared-components/ui';
 
 import { pageStyle, shellStyle, formColumnStyle, COLORS } from './styles';
 import { StepIndicator } from './components/StepIndicator';
@@ -102,6 +103,10 @@ export function OnboardingPage() {
 
   return (
     <div style={pageStyle}>
+      <header className="mx-auto mb-6 flex w-full max-w-content items-center justify-between gap-4">
+        <Brand />
+        <p className="font-mono text-label uppercase text-ink-45">setup / {String(index + 1).padStart(2, '0')} of {String(STEPS.length).padStart(2, '0')}</p>
+      </header>
       <div className="pv-onboarding-shell" style={shellStyle}>
         <div className="pv-form-column" style={formColumnStyle}>
           <StepIndicator

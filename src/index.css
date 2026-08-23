@@ -1,180 +1,264 @@
-/* ─── Base Styles & Design Tokens ─────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Jura:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --magenta: #ff00cc;
-    --navy-dark: #000000;
-    --navy-mid: #2a0a3a;
-    --navy-surface: #0a0510;
-    --bg-base: #000000;
-  }
-
   html {
     scroll-behavior: smooth;
-    background-color: #000000;
+    background: theme('colors.paper.DEFAULT');
   }
 
   body {
-    font-family: 'Inter', sans-serif;
-    background-color: #000000;
-    color: #e0e0e0;
-    overflow-x: hidden;
-    overflow-y: auto;   /* ScrollTrigger needs the page to be scrollable */
+    min-width: 320px;
     margin: 0;
-    padding: 0;
+    overflow-x: hidden;
+    background: theme('colors.paper.DEFAULT');
+    color: theme('colors.ink.DEFAULT');
+    font-family: theme('fontFamily.sans');
+    font-size: 15px;
+    line-height: 1.6;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
   }
 
   * {
     box-sizing: border-box;
   }
 
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   ::selection {
-    background-color: rgba(255, 0, 204, 0.3);
-    color: #ffffff;
+    background: theme('colors.citron.DEFAULT');
+    color: theme('colors.ink.DEFAULT');
   }
 
-  /* Smooth scrollbar */
   ::-webkit-scrollbar {
-    width: 4px;
+    width: 8px;
   }
+
   ::-webkit-scrollbar-track {
-    background: #000000;
+    background: theme('colors.paper.DEFAULT');
   }
+
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 0, 204, 0.3);
-    border-radius: 2px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 0, 204, 0.6);
+    border: 2px solid theme('colors.paper.DEFAULT');
+    border-radius: theme('borderRadius.pill');
+    background: theme('colors.ink.12');
   }
 }
 
-/* ── Keyframe Animations ─────────────────────────────────────────────────── */
-
-/* Letter stagger on loader */
-@keyframes letterFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-    filter: blur(6px);
+@layer components {
+  .surface-glass {
+    @apply rounded-card border border-ink-8 bg-paper-raised/80 shadow-card backdrop-blur-glass;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
+
+  .surface-stage {
+    @apply rounded-stage border border-ink-8 bg-paper-raised/85 shadow-stage backdrop-blur-glass;
+  }
+
+  .meta {
+    @apply m-0 font-mono text-label uppercase text-ink-45;
+  }
+
+  .pv-focusable:focus-visible {
+    @apply outline-none ring-2 ring-violet ring-offset-2 ring-offset-paper;
+  }
+
+  .pv-field {
+    @apply w-full rounded-tile border border-ink-12 bg-paper-raised/75 px-4 py-3.5 text-base text-ink outline-none transition placeholder:text-ink-45 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .pv-field:focus,
+  .pv-field:focus-visible {
+    @apply border-violet ring-2 ring-violet/10;
+  }
+
+  .pv-field[aria-invalid='true'] {
+    @apply border-ink;
+  }
+
+  .pv-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  .pv-card {
+    box-shadow: theme('boxShadow.card');
+    backdrop-filter: blur(20px);
+    transition: border-color 200ms ease, transform 200ms ease;
+  }
+
+  @media (hover: hover) {
+    .pv-card:hover {
+      border-color: rgba(109, 40, 217, 0.45) !important;
+      transform: translateY(-4px);
+    }
   }
 }
 
-/* Scroll hint fade-in from below */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* Scroll arrow bounce */
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(6px); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  33%       { transform: translateY(-18px) rotate(2deg); }
-  66%       { transform: translateY(-10px) rotate(-1deg); }
-}
-
-@keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 80px rgba(255,0,204,0.5), 0 0 140px rgba(255,0,204,0.25); }
-  50%       { box-shadow: 0 0 120px rgba(255,0,204,0.8), 0 0 200px rgba(255,0,204,0.4); }
-}
-
-@keyframes pulse-ring {
-  0%   { transform: scale(1); opacity: 0.8; }
-  100% { transform: scale(3.5); opacity: 0; }
-}
-
-@keyframes shimmer {
-  0%   { background-position: -200% center; }
-  100% { background-position: 200% center; }
-}
-
-/* Scroll hint line pulse */
-@keyframes pulse {
-  0%, 100% { opacity: 0.5; transform: scaleY(1); }
-  50%       { opacity: 1;   transform: scaleY(1.15); }
-}
-
-/* Spinner rotation — used by onboarding/dashboard loading indicators */
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
-/* Loader particles floating upward */
+/* Camera-landing animation vocabulary. */
+@keyframes letterFadeIn {
+  from { opacity: 0; transform: translateY(12px); filter: blur(6px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-18px) rotate(2deg); }
+  66% { transform: translateY(-10px) rotate(-1deg); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 80px rgba(109, 40, 217, .5), 0 0 140px rgba(109, 40, 217, .25); }
+  50% { box-shadow: 0 0 120px rgba(109, 40, 217, .8), 0 0 200px rgba(109, 40, 217, .4); }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: .8; }
+  100% { transform: scale(3.5); opacity: 0; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: .5; transform: scaleY(1); }
+  50% { opacity: 1; transform: scaleY(1.15); }
+}
+
 @keyframes floatUp {
-  0%   { transform: translateY(0)    scale(1);    opacity: 0; }
-  10%  { opacity: 1; }
-  90%  { opacity: 0.6; }
-  100% { transform: translateY(-100vh) scale(0.4); opacity: 0; }
+  0% { transform: translateY(0) scale(1); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: .6; }
+  100% { transform: translateY(-100vh) scale(.4); opacity: 0; }
 }
 
-/* Shimmer sweep across title */
 @keyframes shimmerSweep {
-  0%   { background-position: -200% center; opacity: 1; }
-  100% { background-position: 200% center;  opacity: 0; }
+  0% { background-position: -200% center; opacity: 1; }
+  100% { background-position: 200% center; opacity: 0; }
 }
 
-/* ─── Onboarding / dashboard layout ─────────────────────────────────────────
-   Media queries and :focus-visible cannot be expressed as inline style objects,
-   so the responsive shell and focus rings live here. Everything else stays in
-   @shared-components/theme. */
+html.pv-camera-landing,
+body.pv-camera-landing {
+  background: #000;
+  color: #e0e0e0;
+}
 
-/* Form column alone on narrow screens; live preview joins it once there is room
-   for both without squeezing the form. */
-.pv-onboarding-shell {
+body.pv-camera-landing::-webkit-scrollbar {
+  width: 4px;
+}
+
+body.pv-camera-landing::-webkit-scrollbar-track {
+  background: #000;
+}
+
+body.pv-camera-landing::-webkit-scrollbar-thumb {
+  border: 0;
+  border-radius: 2px;
+  background: rgba(109, 40, 217, .45);
+}
+
+.pv-auth-ground::before,
+.pv-auth-ground::after {
+  position: absolute;
+  z-index: 0;
+  width: min(54rem, 90vw);
+  height: min(54rem, 90vw);
+  border-radius: 999px;
+  content: '';
+  filter: blur(70px);
+  pointer-events: none;
+}
+
+.pv-auth-ground::before {
+  top: -28rem;
+  right: -18rem;
+  background: theme('backgroundImage.aurora-violet');
+}
+
+.pv-auth-ground::after {
+  bottom: -34rem;
+  left: -20rem;
+  background: theme('backgroundImage.aurora-citron');
+}
+
+/* Existing product shells inherit the same responsive system. */
+.pv-onboarding-shell,
+.pv-dashboard-shell,
+.pv-overview-grid,
+.pv-section-grid {
+  display: grid;
   grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
 }
 
 @media (min-width: 60rem) {
   .pv-onboarding-shell {
     grid-template-columns: minmax(0, 32rem) minmax(0, 1fr);
   }
+
   .pv-onboarding-shell > .pv-form-column {
     margin: 0;
   }
-}
-
-.pv-dashboard-shell {
-  grid-template-columns: minmax(0, 1fr);
 }
 
 @media (min-width: 64rem) {
   .pv-dashboard-shell {
     grid-template-columns: 16rem minmax(0, 1fr);
   }
+
+  .pv-section-grid > .pv-span-2 {
+    grid-column: 1 / -1;
+  }
 }
 
-/* ─── Dashboard sidebar ──────────────────────────────────────────────────────
-   Media queries can't be inline styles, so the sidebar's responsive shape lives
-   here. Colours mirror the design tokens (surface / borderSubtle) — kept literal
-   for the same reason the focus rule above is. On narrow screens the sidebar is
-   a horizontal, scrollable rail of nav rows; the brand and account footer hide.
-   At 64rem it becomes a sticky vertical panel. */
+.pv-overview-grid,
+.pv-section-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  align-items: start;
+}
+
 .pv-sidebar {
   display: flex;
   flex-direction: row;
-  gap: 0.25rem;
+  gap: .25rem;
   overflow-x: auto;
-  padding: 0.4rem;
-  background: #151e21;
-  border: 1px solid #2c3a3e;
-  border-radius: 0.75rem;
+  padding: .4rem;
+  border: 1px solid theme('colors.ink.8');
+  border-radius: theme('borderRadius.card');
+  background: rgba(255,255,255,.80);
+  box-shadow: theme('boxShadow.card');
+  backdrop-filter: blur(20px);
   -webkit-overflow-scrolling: touch;
 }
+
 .pv-sidebar-brand,
 .pv-sidebar-foot {
   display: none;
@@ -185,75 +269,31 @@
     position: sticky;
     top: 1.5rem;
     flex-direction: column;
-    gap: 0.1rem;
+    gap: .1rem;
     overflow: visible;
-    padding: 0.85rem;
+    padding: .85rem;
   }
-  .pv-sidebar-brand {
-    display: flex;
-  }
+
+  .pv-sidebar-brand,
   .pv-sidebar-foot {
     display: flex;
   }
 }
 
-/* ─── Dashboard bento grids ──────────────────────────────────────────────────
-   One column on narrow screens; a paired overview row and a two-up section grid
-   once there's room. `.pv-span-2` lets a dense card claim the full width. */
-.pv-overview-grid,
-.pv-section-grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: minmax(0, 1fr);
-}
-
-@media (min-width: 64rem) {
-  .pv-overview-grid {
-    grid-template-columns: minmax(0, 21rem) minmax(0, 1fr);
-    align-items: start;
-  }
-  .pv-section-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
-  }
-  .pv-section-grid > .pv-span-2 {
-    grid-column: 1 / -1;
-  }
-}
-
-/* Subtle elevation on hover so cards read as discrete, tappable surfaces without
-   a permanent heavy shadow. Pointer devices only — no hover trap on touch. */
-.pv-card {
-  transition:
-    border-color 200ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 200ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-@media (hover: hover) {
-  .pv-card:hover {
-    border-color: #63786b;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
-  }
-}
-
-/* A visible keyboard focus target. The previous inputs set `outline: none` with
-   nothing in its place, so keyboard users had no idea where they were. */
-.pv-focusable:focus-visible {
-  outline: 2px solid #b0c494;
-  outline-offset: 2px;
-  border-radius: 0.5rem;
-}
-
-.pv-field:focus-visible,
-.pv-field:focus {
-  outline: none;
-  border-color: #b0c494;
-  box-shadow: 0 0 0 3px rgba(156, 176, 128, 0.14);
-}
-
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+
   .pv-onboarding-shell *,
   .pv-dashboard-shell * {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+    animation-duration: .01ms !important;
   }
 }

@@ -263,38 +263,13 @@ function StatusDot({ status, touched }: { status: string; touched: boolean }) {
 
   if (status === 'available') {
     return (
-      <svg
-        width="15"
-        height="15"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke={COLORS.success}
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        style={{ flexShrink: 0 }}
-        aria-hidden="true"
-      >
-        <path d="M20 6 9 17l-5-5" />
-      </svg>
+      <span aria-hidden="true" style={{ color: COLORS.success, flexShrink: 0, fontFamily: FONT.mono, fontSize: '0.65rem' }}>yes</span>
     );
   }
 
   if (status === 'unavailable' || status === 'invalid') {
     return (
-      <svg
-        width="15"
-        height="15"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke={COLORS.danger}
-        strokeWidth="3"
-        strokeLinecap="round"
-        style={{ flexShrink: 0 }}
-        aria-hidden="true"
-      >
-        <path d="M18 6 6 18M6 6l12 12" />
-      </svg>
+      <span aria-hidden="true" style={{ color: COLORS.danger, flexShrink: 0, fontFamily: FONT.mono, fontSize: '0.65rem' }}>no</span>
     );
   }
 

@@ -1,9 +1,9 @@
 import { useState, type ReactNode } from 'react';
+import { Button } from '@shared-components/ui';
 import {
   cardStyle,
   sectionTitleStyle,
   sectionDescStyle,
-  smallButtonStyle,
 } from '../styles';
 
 interface EditableSectionProps {
@@ -47,9 +47,7 @@ export function EditableSection({
           {description && <p style={sectionDescStyle}>{description}</p>}
         </div>
         {!editing && !readOnly && (
-          <button type="button" style={smallButtonStyle('ghost')} onClick={() => setEditing(true)}>
-            Edit
-          </button>
+          <Button type="button" variant="secondary" size="compact" onClick={() => setEditing(true)}>Edit</Button>
         )}
       </header>
 

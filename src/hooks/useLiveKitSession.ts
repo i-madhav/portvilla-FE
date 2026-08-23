@@ -65,7 +65,7 @@ export function useLiveKitSession(
       cancelled = true;
       roomRef.current?.disconnect();
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   /* ── Step 2: watch for orb becoming visible, connect exactly once ─────── */
   useEffect(() => {
@@ -215,5 +215,5 @@ export function useLiveKitSession(
         hasConnected.current = false; /* allow retry on next orbVisible tick */
       });
 
-  }, [orbVisible, orbHandle]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  }, [orbVisible, orbHandle]);
 }

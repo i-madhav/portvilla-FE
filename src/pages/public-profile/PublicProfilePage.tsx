@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { Brand, Button, ButtonAnchor, Surface } from '@shared-components/ui';
 import {
   COLORS,
   RADIUS,
   SHADOW,
   FONT,
-  buttonStyle,
   pillStyle,
   inputStyle,
   noticeStyle,
@@ -144,14 +144,9 @@ function PasswordGate({
         />
         {state.error && <p style={{ ...noticeStyle('error'), marginTop: '0.6rem' }}>{state.error}</p>}
 
-        <button
-          type="submit"
-          className="pv-focusable"
-          disabled={!password || state.unlocking}
-          style={{ ...buttonStyle('primary', !password || state.unlocking), width: '100%', marginTop: '1rem' }}
-        >
+        <Button type="submit" fullWidth disabled={!password || state.unlocking} className="mt-4">
           {state.unlocking ? 'Checking…' : 'View profile'}
-        </button>
+        </Button>
       </form>
     </div>
   );
@@ -164,6 +159,7 @@ function ProfileView({ profile }: { profile: PublicProfileDto }) {
   return (
     <div style={page}>
       <div style={shell}>
+        <div style={{ marginBottom: '1.5rem' }}><Brand /></div>
         {id.coverImage && (
           <div
             style={{
@@ -319,14 +315,14 @@ function ProfileView({ profile }: { profile: PublicProfileDto }) {
           <Card title="Get in touch">
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
               {profile.social.calendarUrl && (
-                <a href={profile.social.calendarUrl} target="_blank" rel="noopener noreferrer" className="pv-focusable" style={{ ...buttonStyle('primary'), textDecoration: 'none' }}>
+                <ButtonAnchor href={profile.social.calendarUrl} target="_blank" rel="noopener noreferrer">
                   Book a call
-                </a>
+                </ButtonAnchor>
               )}
               {profile.social.links.map((l, i) => (
-                <a key={`${l.platform}-${i}`} href={l.url} target="_blank" rel="noopener noreferrer" className="pv-focusable" style={{ ...buttonStyle('secondary'), textDecoration: 'none' }}>
+                <ButtonAnchor key={`${l.platform}-${i}`} href={l.url} target="_blank" rel="noopener noreferrer" variant="secondary">
                   {l.label || l.platform}
-                </a>
+                </ButtonAnchor>
               ))}
             </div>
           </Card>
@@ -342,15 +338,7 @@ function ProfileView({ profile }: { profile: PublicProfileDto }) {
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section
-      style={{
-        background: COLORS.surface,
-        border: `1px solid ${COLORS.borderSubtle}`,
-        borderRadius: RADIUS.lg,
-        padding: '1.35rem',
-        marginTop: '1rem',
-      }}
-    >
+    <Surface className="pv-card mt-4 p-card">
       <h2
         style={{
           color: COLORS.textMuted,
@@ -364,6 +352,6 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
         {title}
       </h2>
       {children}
-    </section>
+    </Surface>
   );
 }

@@ -1,7 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { Button, ButtonAnchor } from '@shared-components/ui';
 import type { ProfileDataResponseDto } from '@typings/profileApi';
 import { publicProfileLabel, publicProfileUrl } from '@app/lib/publicProfile';
-import { COLORS, RADIUS, SHADOW, FONT, MOTION, buttonStyle } from '../styles';
+import { COLORS, RADIUS, SHADOW, FONT, MOTION } from '../styles';
 // The theme's tone-taking pillStyle, not the flat object `../styles` re-exports
 // under the same name for the legacy sections.
 import { pillStyle } from '@shared-components/theme';
@@ -71,7 +72,7 @@ export function ProfileHero({ profile, onLogout }: ProfileHeroProps) {
       style={{
         background: COLORS.surface,
         border: `1px solid ${COLORS.borderSubtle}`,
-        borderRadius: RADIUS.lg,
+        borderRadius: RADIUS.card,
         boxShadow: SHADOW.md,
         padding: '1.5rem',
       }}
@@ -129,20 +130,7 @@ export function ProfileHero({ profile, onLogout }: ProfileHeroProps) {
         </div>
 
         {/* Demoted to a quiet corner control. It is not the job to be done. */}
-        <button
-          type="button"
-          className="pv-focusable"
-          onClick={onLogout}
-          style={{
-            ...buttonStyle('ghost'),
-            minHeight: 'auto',
-            padding: '0.35rem 0.6rem',
-            fontSize: '0.78rem',
-            color: COLORS.textMuted,
-          }}
-        >
-          Log out
-        </button>
+        <Button type="button" variant="ghost" size="compact" onClick={onLogout}>Log out</Button>
       </div>
 
       {/* The address, as an actual address. */}
@@ -183,70 +171,20 @@ export function ProfileHero({ profile, onLogout }: ProfileHeroProps) {
         </a>
 
         <div style={{ display: 'flex', gap: '0.4rem' }}>
-          <button
-            type="button"
-            className="pv-focusable"
-            onClick={() => void copy()}
-            aria-label="Copy your profile link"
-            style={{
-              ...buttonStyle('secondary'),
-              minHeight: 'auto',
-              padding: '0.35rem 0.7rem',
-              fontSize: '0.78rem',
-              color: copied ? COLORS.success : COLORS.textSecondary,
-              borderColor: copied ? COLORS.success : COLORS.border,
-            }}
-          >
-            {copied ? (
-              <>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M20 6 9 17l-5-5" />
-                </svg>
-                Copied
-              </>
-            ) : (
-              <>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
-                Copy
-              </>
-            )}
-          </button>
+          <Button type="button" variant="secondary" size="compact" onClick={() => void copy()} aria-label="Copy your profile link">
+            {copied ? 'Copied' : 'Copy link'}
+          </Button>
 
-          <button
-            type="button"
-            className="pv-focusable"
-            onClick={() => void share()}
-            style={{
-              ...buttonStyle('secondary'),
-              minHeight: 'auto',
-              padding: '0.35rem 0.7rem',
-              fontSize: '0.78rem',
-            }}
-          >
-            Share
-          </button>
+          <Button type="button" variant="secondary" size="compact" onClick={() => void share()}>Share</Button>
 
-          <a
+          <ButtonAnchor
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="pv-focusable"
-            style={{
-              ...buttonStyle('primary'),
-              minHeight: 'auto',
-              padding: '0.35rem 0.75rem',
-              fontSize: '0.78rem',
-              textDecoration: 'none',
-            }}
+            size="compact"
           >
-            View page
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M7 17 17 7M7 7h10v10" />
-            </svg>
-          </a>
+            View page ↗
+          </ButtonAnchor>
         </div>
       </div>
 

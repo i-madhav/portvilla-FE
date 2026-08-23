@@ -11,9 +11,10 @@ export const pageStyle: CSSProperties = {
   background: COLORS.canvas,
   minHeight: '100vh',
   display: 'flex',
+  flexDirection: 'column',
   alignItems: 'flex-start',
   justifyContent: 'center',
-  padding: `${SPACE['2xl']} ${SPACE.lg}`,
+  padding: `${SPACE['2xl']} ${SPACE.lg} ${SPACE['3xl']}`,
 };
 
 /**
@@ -24,7 +25,7 @@ export const pageStyle: CSSProperties = {
  */
 export const shellStyle: CSSProperties = {
   width: '100%',
-  maxWidth: '64rem',
+  maxWidth: '73.75rem',
   margin: '0 auto',
   display: 'grid',
   gridTemplateColumns: 'minmax(0, 1fr)',
@@ -34,10 +35,12 @@ export const shellStyle: CSSProperties = {
 
 export const formColumnStyle: CSSProperties = {
   background: COLORS.surface,
-  borderRadius: RADIUS.xl,
+  backdropFilter: 'blur(20px)',
+  WebkitBackdropFilter: 'blur(20px)',
+  borderRadius: RADIUS.card,
   border: `1px solid ${COLORS.borderSubtle}`,
   boxShadow: SHADOW.lg,
-  padding: '2rem',
+  padding: 'clamp(1.35rem, 4vw, 2rem)',
   width: '100%',
   maxWidth: '32rem',
   margin: '0 auto',
@@ -72,7 +75,7 @@ export function optionCardStyle(selected: boolean): CSSProperties {
     alignItems: 'flex-start',
     gap: '0.6rem',
     padding: '0.75rem 0.85rem',
-    borderRadius: RADIUS.md,
+    borderRadius: RADIUS.tile,
     background: selected ? COLORS.accentSubtle : COLORS.surfaceRaised,
     border: `1px solid ${selected ? COLORS.accent : COLORS.borderSubtle}`,
     cursor: 'pointer',

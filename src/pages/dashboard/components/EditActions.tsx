@@ -1,4 +1,4 @@
-import { smallButtonStyle } from '../styles';
+import { Button } from '@shared-components/ui';
 
 interface EditActionsProps {
   onCancel: () => void;
@@ -6,16 +6,11 @@ interface EditActionsProps {
   saveLabel?: string;
 }
 
-/** Shared Save / Cancel footer for an inline section edit form. */
 export function EditActions({ onCancel, saving, saveLabel = 'Save' }: EditActionsProps) {
   return (
-    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
-      <button type="button" style={smallButtonStyle('ghost')} onClick={onCancel} disabled={saving}>
-        Cancel
-      </button>
-      <button type="submit" style={smallButtonStyle('primary')} disabled={saving}>
-        {saving ? 'Saving…' : saveLabel}
-      </button>
+    <div className="mt-4 flex justify-end gap-2">
+      <Button type="button" variant="secondary" size="compact" onClick={onCancel} disabled={saving}>Cancel</Button>
+      <Button type="submit" size="compact" disabled={saving}>{saving ? 'Saving…' : saveLabel}</Button>
     </div>
   );
 }

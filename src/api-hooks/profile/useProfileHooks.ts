@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
-import { useToast } from '@app/providers/ToastContext';
+import { useToast } from '@app/providers/toast';
 import { useAppDispatch } from '@stores/store';
 import {
   setProfileData,

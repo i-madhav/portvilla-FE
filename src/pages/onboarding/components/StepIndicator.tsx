@@ -1,3 +1,4 @@
+import { Button } from '@shared-components/ui';
 import { COLORS, RADIUS, MOTION } from '@shared-components/theme';
 
 interface StepIndicatorProps {
@@ -31,39 +32,7 @@ export function StepIndicator({ currentIndex, total, label, onBack }: StepIndica
         }}
       >
         {onBack ? (
-          <button
-            type="button"
-            onClick={onBack}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: COLORS.textMuted,
-              fontSize: '0.8rem',
-              cursor: 'pointer',
-              padding: '0.25rem 0.4rem 0.25rem 0',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.3rem',
-              transition: `color ${MOTION.fast}`,
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = COLORS.textPrimary)}
-            onMouseLeave={(e) => (e.currentTarget.style.color = COLORS.textMuted)}
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            Back
-          </button>
+          <Button type="button" variant="ghost" size="compact" onClick={onBack}>← Back</Button>
         ) : (
           <span />
         )}

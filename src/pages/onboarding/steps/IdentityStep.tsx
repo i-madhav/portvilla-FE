@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Button } from '@shared-components/ui';
 import type { EntityType } from '@typings/profileApi';
 import { EntityType as EntityTypeEnum } from '@typings/profileApi';
 import { StepActions } from '../components/StepActions';
@@ -6,7 +7,6 @@ import { StepHeader } from '../components/StepHeader';
 import type { IdentityStepData } from '../useOnboardingFlow';
 import {
   COLORS,
-  MOTION,
   inputStyle,
   textareaStyle,
   selectStyle,
@@ -151,45 +151,15 @@ export function IdentityStep({ initial, onContinue, busy }: IdentityStepProps) {
         />
       </Field>
 
-      <button
+      <Button
         type="button"
-        className="pv-focusable"
+        variant="ghost"
+        size="compact"
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.35rem',
-          background: 'none',
-          border: 'none',
-          color: COLORS.textMuted,
-          fontSize: '0.8rem',
-          cursor: 'pointer',
-          padding: '0.35rem 0',
-          transition: `color ${MOTION.fast}`,
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.color = COLORS.textSecondary)}
-        onMouseLeave={(e) => (e.currentTarget.style.color = COLORS.textMuted)}
       >
-        <svg
-          width="13"
-          height="13"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          style={{
-            transform: expanded ? 'rotate(90deg)' : 'none',
-            transition: `transform ${MOTION.fast}`,
-          }}
-          aria-hidden="true"
-        >
-          <path d="m9 18 6-6-6-6" />
-        </svg>
         {expanded ? 'Fewer details' : 'Add location, industry, availability'}
-      </button>
+      </Button>
 
       {expanded && (
         <div style={{ marginTop: '1rem' }}>

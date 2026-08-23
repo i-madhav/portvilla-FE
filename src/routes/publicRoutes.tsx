@@ -4,7 +4,7 @@ import SceneLoader from '@app/components/SceneLoader';
 
 export const publicRoutes: RouteObject[] = [
   {
-    // App is the provider shell. SceneLoader is the landing page.
+    // App is the provider shell. SceneLoader owns the immersive landing sequence.
     element: <App />,
     children: [
       {

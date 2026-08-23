@@ -20,7 +20,7 @@ export const pageStyle: CSSProperties = {
 
 /** Sidebar + content on wide screens; single column below. */
 export const shellStyle: CSSProperties = {
-  maxWidth: '76rem',
+  maxWidth: '73.75rem',
   margin: '0 auto',
   display: 'grid',
   gap: '1.5rem',
@@ -37,7 +37,9 @@ export const containerStyle: CSSProperties = {
 
 export const cardStyle: CSSProperties = {
   background: COLORS.surface,
-  borderRadius: RADIUS.lg,
+  backdropFilter: 'blur(20px)',
+  WebkitBackdropFilter: 'blur(20px)',
+  borderRadius: RADIUS.card,
   padding: '1.35rem',
   border: `1px solid ${COLORS.borderSubtle}`,
   boxShadow: SHADOW.sm,

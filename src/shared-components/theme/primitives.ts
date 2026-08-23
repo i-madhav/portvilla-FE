@@ -1,84 +1,81 @@
-// ─── Shared style primitives ─────────────────────────────────────────────────
-// Built on the tokens in ./tokens. Both onboarding and dashboard consume these,
-// so a control looks and behaves the same wherever it appears.
-
 import type { CSSProperties } from 'react';
 import { COLORS, RADIUS, SHADOW, FONT, MOTION } from './tokens';
 
-// ─── Typography ──────────────────────────────────────────────────────────────
-
 export const displayStyle: CSSProperties = {
   color: COLORS.textPrimary,
-  fontSize: 'clamp(1.5rem, 1.2rem + 1.2vw, 1.9rem)',
+  fontSize: 'clamp(2.125rem, 4.4vw, 3.625rem)',
   fontWeight: 700,
-  lineHeight: 1.15,
-  letterSpacing: '-0.02em',
+  lineHeight: 1.02,
+  letterSpacing: '-0.035em',
   margin: 0,
+  textWrap: 'balance',
 };
 
 export const titleStyle: CSSProperties = {
   color: COLORS.textPrimary,
-  fontSize: '1.15rem',
-  fontWeight: 700,
-  lineHeight: 1.25,
-  letterSpacing: '-0.01em',
+  fontSize: '1.25rem',
+  fontWeight: 600,
+  lineHeight: 1.2,
+  letterSpacing: '-0.02em',
   margin: 0,
 };
 
 export const bodyStyle: CSSProperties = {
   color: COLORS.textSecondary,
-  fontSize: '0.9rem',
-  lineHeight: 1.55,
+  fontSize: '0.9375rem',
+  lineHeight: 1.6,
   margin: 0,
 };
 
 export const mutedStyle: CSSProperties = {
   color: COLORS.textMuted,
-  fontSize: '0.8rem',
+  fontSize: '0.8125rem',
   lineHeight: 1.5,
   margin: 0,
 };
 
 export const labelStyle: CSSProperties = {
   display: 'block',
-  color: COLORS.textSecondary,
-  fontSize: '0.8rem',
+  color: COLORS.textMuted,
+  fontFamily: FONT.mono,
+  fontSize: '0.71875rem',
   fontWeight: 600,
-  marginBottom: '0.4rem',
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  marginBottom: '0.5rem',
 };
-
-// ─── Surfaces ────────────────────────────────────────────────────────────────
 
 export const cardStyle: CSSProperties = {
   background: COLORS.surface,
-  borderRadius: RADIUS.xl,
+  backdropFilter: 'blur(20px)',
+  WebkitBackdropFilter: 'blur(20px)',
+  borderRadius: RADIUS.card,
   border: `1px solid ${COLORS.borderSubtle}`,
-  boxShadow: SHADOW.md,
+  boxShadow: SHADOW.sm,
 };
-
-// ─── Inputs ──────────────────────────────────────────────────────────────────
-// Font size stays >= 16px on touch targets; below that iOS Safari zooms the
-// viewport on focus, which reads as the page jumping mid-form.
 
 const controlBase: CSSProperties = {
   width: '100%',
-  padding: '0.7rem 0.85rem',
-  borderRadius: RADIUS.md,
+  padding: '0.875rem 1rem',
+  borderRadius: RADIUS.tile,
   fontSize: '1rem',
   fontFamily: FONT.sans,
   outline: 'none',
   background: COLORS.fieldFill,
   color: COLORS.textPrimary,
   border: `1px solid ${COLORS.border}`,
-  transition: `border-color ${MOTION.fast}, box-shadow ${MOTION.fast}`,
+  transition: `border-color ${MOTION.fast} ${MOTION.ease}, box-shadow ${MOTION.fast} ${MOTION.ease}`,
   boxSizing: 'border-box',
 };
 
 export type FieldState = 'default' | 'error' | 'success';
 
 export function inputStyle(state: FieldState = 'default'): CSSProperties {
-  const borderColor =
-    state === 'error' ? COLORS.danger : state === 'success' ? COLORS.success : COLORS.border;
+  const borderColor = state === 'error'
+    ? COLORS.danger
+    : state === 'success'
+      ? COLORS.accent
+      : COLORS.border;
   return { ...controlBase, borderColor };
 }
 
@@ -91,121 +88,97 @@ export function selectStyle(state: FieldState = 'default'): CSSProperties {
     ...inputStyle(state),
     appearance: 'none',
     cursor: 'pointer',
-    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23879a8d' d='M6 8L0 0h12z'/%3E%3C/svg%3E")`,
+    backgroundImage: 'linear-gradient(45deg, transparent 50%, rgba(20,19,26,.45) 50%), linear-gradient(135deg, rgba(20,19,26,.45) 50%, transparent 50%)',
+    backgroundPosition: 'calc(100% - 1rem) center, calc(100% - .7rem) center',
+    backgroundSize: '.35rem .35rem, .35rem .35rem',
     backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'right 0.85rem center',
-    paddingRight: '2.25rem',
+    paddingRight: '2.5rem',
   };
 }
 
-/** Focus ring. Applied on focus/blur handlers so keyboard users get a visible target. */
 export const focusRing: CSSProperties = {
   borderColor: COLORS.borderFocus,
   boxShadow: `0 0 0 3px ${COLORS.accentSubtle}`,
 };
-
-// ─── Buttons ─────────────────────────────────────────────────────────────────
 
 const buttonBase: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
   gap: '0.45rem',
-  padding: '0.7rem 1.1rem',
-  borderRadius: RADIUS.md,
-  fontSize: '0.9rem',
+  padding: '0.875rem 1.625rem',
+  borderRadius: RADIUS.pill,
+  fontSize: '0.875rem',
   fontWeight: 600,
   fontFamily: FONT.sans,
   cursor: 'pointer',
   border: '1px solid transparent',
-  transition: `background ${MOTION.fast}, border-color ${MOTION.fast}, opacity ${MOTION.fast}`,
+  transition: `border-color ${MOTION.fast} ${MOTION.ease}, transform ${MOTION.fast} ${MOTION.ease}, opacity ${MOTION.fast} ${MOTION.ease}`,
   textAlign: 'center',
   lineHeight: 1.2,
-  minHeight: '2.75rem', // 44px — the minimum comfortable touch target
+  minHeight: '2.75rem',
 };
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
 export function buttonStyle(variant: ButtonVariant = 'primary', disabled = false): CSSProperties {
-  // Disabled controls are exempt from WCAG contrast, but the old palette put
-  // them at 1.59:1 — invisible rather than merely inactive. These stay legible.
   if (disabled) {
     return {
       ...buttonBase,
-      background: variant === 'primary' ? COLORS.surfaceRaised : 'transparent',
-      color: COLORS.textMuted,
+      background: variant === 'primary' ? COLORS.textMuted : COLORS.surface,
+      color: variant === 'primary' ? COLORS.surfaceRaised : COLORS.textMuted,
       borderColor: variant === 'ghost' ? 'transparent' : COLORS.borderSubtle,
+      boxShadow: 'none',
       cursor: 'not-allowed',
+      opacity: 0.68,
     };
   }
 
   switch (variant) {
     case 'primary':
-      return { ...buttonBase, background: COLORS.accent, color: COLORS.onAccent };
+      return { ...buttonBase, background: COLORS.textPrimary, color: COLORS.canvas, boxShadow: SHADOW.cta };
     case 'secondary':
-      return {
-        ...buttonBase,
-        background: 'transparent',
-        color: COLORS.textPrimary,
-        borderColor: COLORS.border,
-      };
+      return { ...buttonBase, background: COLORS.surface, color: COLORS.textPrimary, borderColor: COLORS.border };
     case 'danger':
-      return {
-        ...buttonBase,
-        background: 'transparent',
-        color: COLORS.danger,
-        borderColor: COLORS.danger,
-      };
+      return { ...buttonBase, background: COLORS.surface, color: COLORS.danger, borderColor: COLORS.border };
     case 'ghost':
     default:
       return { ...buttonBase, background: 'transparent', color: COLORS.textSecondary };
   }
 }
 
-// ─── Pills / chips ───────────────────────────────────────────────────────────
-
 export function pillStyle(tone: 'neutral' | 'accent' | 'success' | 'warning' = 'neutral'): CSSProperties {
-  const map = {
-    neutral: { bg: COLORS.surfaceRaised, fg: COLORS.textSecondary, bd: COLORS.borderSubtle },
-    accent: { bg: COLORS.accentSubtle, fg: COLORS.accent, bd: 'transparent' },
-    success: { bg: COLORS.successSubtle, fg: COLORS.success, bd: 'transparent' },
-    warning: { bg: COLORS.warningSubtle, fg: COLORS.warning, bd: 'transparent' },
-  }[tone];
-
+  const active = tone !== 'neutral';
   return {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '0.35rem',
-    padding: '0.3rem 0.6rem',
+    padding: '0.35rem 0.65rem',
     borderRadius: RADIUS.pill,
-    background: map.bg,
-    border: `1px solid ${map.bd}`,
-    color: map.fg,
-    fontSize: '0.78rem',
+    background: active ? COLORS.accentSubtle : COLORS.surface,
+    border: `1px solid ${active ? 'transparent' : COLORS.borderSubtle}`,
+    color: active ? COLORS.accentHover : COLORS.textSecondary,
+    fontFamily: FONT.mono,
+    fontSize: '0.71875rem',
     fontWeight: 500,
     lineHeight: 1.3,
   };
 }
 
-// ─── Status messages ─────────────────────────────────────────────────────────
-
 export function noticeStyle(tone: 'error' | 'success' | 'info'): CSSProperties {
-  const map = {
-    error: { bg: COLORS.dangerSubtle, fg: COLORS.danger },
-    success: { bg: COLORS.successSubtle, fg: COLORS.success },
-    info: { bg: COLORS.accentSubtle, fg: COLORS.accent },
-  }[tone];
-
+  const blocking = tone === 'error';
   return {
     display: 'flex',
     alignItems: 'flex-start',
     gap: '0.45rem',
-    background: map.bg,
-    color: map.fg,
-    fontSize: '0.8rem',
-    lineHeight: 1.45,
-    padding: '0.55rem 0.7rem',
-    borderRadius: RADIUS.md,
+    background: blocking ? COLORS.dangerSubtle : COLORS.accentSubtle,
+    color: blocking ? COLORS.danger : COLORS.accentHover,
+    border: `1px solid ${blocking ? COLORS.border : COLORS.accentSubtle}`,
+    fontFamily: FONT.mono,
+    fontSize: '0.75rem',
+    lineHeight: 1.5,
+    padding: '0.7rem 0.8rem',
+    borderRadius: RADIUS.tile,
     margin: 0,
   };
 }

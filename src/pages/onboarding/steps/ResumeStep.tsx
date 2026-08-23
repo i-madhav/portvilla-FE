@@ -1,8 +1,9 @@
 import { useState, useRef, useCallback } from 'react';
+import { Button } from '@shared-components/ui';
 import { useUploadResume } from '@api-hooks/profile/useProfileHooks';
 import type { ResumeSuggestionsDto } from '@typings/profileApi';
 import { StepHeader } from '../components/StepHeader';
-import { COLORS, RADIUS, MOTION, buttonStyle, noticeStyle, pillStyle } from '../styles';
+import { COLORS, RADIUS, MOTION, noticeStyle, pillStyle } from '../styles';
 
 interface ResumeStepProps {
   onSuggestions: (s: ResumeSuggestionsDto) => void;
@@ -124,19 +125,7 @@ export function ResumeStep({ onSuggestions, onSkip, onFinishNow }: ResumeStepPro
             </div>
           ) : (
             <>
-              <svg
-                width="26"
-                height="26"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke={COLORS.textMuted}
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-              </svg>
+              <p className="font-mono text-label uppercase text-violet">file.input / pdf</p>
               <p
                 style={{
                   color: COLORS.textPrimary,
@@ -150,14 +139,7 @@ export function ResumeStep({ onSuggestions, onSkip, onFinishNow }: ResumeStepPro
               <p style={{ color: COLORS.textMuted, fontSize: '0.78rem', margin: '0 0 1rem' }}>
                 PDF, up to 5 MB
               </p>
-              <button
-                type="button"
-                className="pv-focusable"
-                onClick={() => inputRef.current?.click()}
-                style={buttonStyle('secondary')}
-              >
-                Choose file
-              </button>
+              <Button type="button" variant="secondary" onClick={() => inputRef.current?.click()}>Choose file</Button>
             </>
           )}
         </div>
@@ -179,20 +161,7 @@ export function ResumeStep({ onSuggestions, onSkip, onFinishNow }: ResumeStepPro
             lineHeight: 1.5,
           }}
         >
-          <svg
-            width="13"
-            height="13"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            style={{ flexShrink: 0, marginTop: '0.15rem' }}
-            aria-hidden="true"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 16v-4M12 8h.01" />
-          </svg>
+          <span className="font-mono text-label uppercase text-violet" aria-hidden="true">privacy /</span>
           <span>
             Your resume text is stored on your profile and sent to an AI model to draft the
             suggestions. You can delete it any time from your dashboard.
@@ -212,35 +181,27 @@ export function ResumeStep({ onSuggestions, onSkip, onFinishNow }: ResumeStepPro
       </div>
 
       <div style={{ display: 'flex', gap: '0.6rem', marginTop: '1.75rem' }}>
-        <button
+        <Button
           type="button"
-          className="pv-focusable"
+          variant={outcome === 'stored-only' ? 'primary' : 'secondary'}
           onClick={onSkip}
           disabled={busy}
-          style={{ ...buttonStyle(outcome === 'stored-only' ? 'primary' : 'secondary', busy), flex: 1 }}
+          className="flex-1"
         >
           {outcome === 'stored-only' ? 'Continue' : "I'll type it myself"}
-        </button>
+        </Button>
       </div>
 
       <div style={{ textAlign: 'center', marginTop: '0.9rem' }}>
-        <button
+        <Button
           type="button"
-          className="pv-focusable"
+          variant="ghost"
+          size="compact"
           onClick={onFinishNow}
           disabled={busy}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: COLORS.textMuted,
-            fontSize: '0.78rem',
-            cursor: busy ? 'not-allowed' : 'pointer',
-            textDecoration: 'underline',
-            textUnderlineOffset: '0.2em',
-          }}
         >
           Finish setup — I'll add the rest later
-        </button>
+        </Button>
       </div>
     </div>
   );

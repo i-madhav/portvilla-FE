@@ -41,6 +41,16 @@ const SPACER_HEIGHT: Record<Phase, string> = {
 export default function SceneLoader() {
   const { progress, done } = useImagePreloader(IMAGE_SRCS);
 
+  useEffect(() => {
+    document.documentElement.classList.add('pv-camera-landing');
+    document.body.classList.add('pv-camera-landing');
+
+    return () => {
+      document.documentElement.classList.remove('pv-camera-landing');
+      document.body.classList.remove('pv-camera-landing');
+    };
+  }, []);
+
   const [phase,            setPhase           ] = useState<Phase>('loading');
   const [loaderFading,     setLoaderFading    ] = useState(false);
   const [sceneryOpacity,   setSceneryOpacity  ] = useState(0);

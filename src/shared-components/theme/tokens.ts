@@ -1,45 +1,34 @@
-// ─── Portvilla Design Tokens ─────────────────────────────────────────────────
-// Shared by onboarding, dashboard, and any future authenticated surface.
-//
-// The brand hue (#9CB080 sage) is kept, but it is now an *accent* on a neutral
-// dark ramp rather than green text on a green card. The previous palette put
-// #618764 on #2B5748 (2.02:1) and shipped a primary button at 3.19:1 — every
-// text token on the card surface failed WCAG AA. Every pairing below is
-// measured; ratios are noted so they survive future edits.
+// Runtime equivalents of the Tailwind tokens. Inline-style-heavy legacy
+// surfaces consume these names while they are incrementally moved to the UI
+// components in @shared-components/ui.
 
 export const COLORS = {
-  // Surfaces — neutral, green-undertoned, ascending elevation
-  canvas: '#0E1416',
-  surface: '#151E21',
-  surfaceRaised: '#1C282B',
-  fieldFill: '#0E1416',
+  canvas: '#F6F5F1',
+  surface: 'rgba(255,255,255,.84)',
+  surfaceRaised: '#FFFFFF',
+  fieldFill: 'rgba(255,255,255,.76)',
 
-  // Text (on `surface`)
-  textPrimary: '#EAF0EC', // 14.66:1
-  textSecondary: '#B3C2B8', // 9.14:1
-  textMuted: '#879A8D', // 5.68:1 — the floor for body copy
+  textPrimary: '#14131A',
+  textSecondary: 'rgba(20,19,26,.60)',
+  textMuted: 'rgba(20,19,26,.45)',
 
-  // Borders.
-  // `borderSubtle` is decorative only (dividers, card edges). Never use it to
-  // delineate an interactive control: WCAG 1.4.11 wants 3:1 for those, and it
-  // lands at 1.44:1.
-  borderSubtle: '#2C3A3E',
-  border: '#63786B', // 3.57:1 vs surface, 3.92:1 vs fieldFill
-  borderFocus: '#B0C494', // 9.88:1 vs fieldFill
+  borderSubtle: 'rgba(20,19,26,.08)',
+  border: 'rgba(20,19,26,.12)',
+  borderFocus: '#6D28D9',
 
-  // Brand accent
-  accent: '#9CB080', // 7.21:1 on surface
-  accentHover: '#B0C494',
-  accentSubtle: 'rgba(156, 176, 128, 0.14)',
-  onAccent: '#0E1416', // 7.91:1 on accent — button label
+  accent: '#6D28D9',
+  accentHover: '#5B21B6',
+  accentSubtle: 'rgba(109,40,217,.10)',
+  onAccent: '#FFFFFF',
 
-  // Semantic
-  success: '#7FD1A0', // 9.30:1
-  successSubtle: 'rgba(127, 209, 160, 0.14)',
-  danger: '#FF8B76', // 7.43:1
-  dangerSubtle: 'rgba(255, 139, 118, 0.14)',
-  warning: '#E8C37E', // 10.12:1
-  warningSubtle: 'rgba(232, 195, 126, 0.14)',
+  // Product status is expressed with the core palette: violet is positive or
+  // active; ink is blocking. No unrelated traffic-light palette is introduced.
+  success: '#6D28D9',
+  successSubtle: 'rgba(109,40,217,.10)',
+  danger: '#14131A',
+  dangerSubtle: 'rgba(20,19,26,.08)',
+  warning: '#5B21B6',
+  warningSubtle: 'rgba(109,40,217,.10)',
 } as const;
 
 export const SPACE = {
@@ -50,37 +39,40 @@ export const SPACE = {
   xl: '1.5rem',
   '2xl': '2rem',
   '3xl': '3rem',
+  gutter: '2.125rem',
+  section: '6.875rem',
 } as const;
 
 export const RADIUS = {
   sm: '0.375rem',
-  md: '0.5rem',
-  lg: '0.75rem',
-  xl: '1rem',
+  md: '1.125rem',
+  lg: '1.25rem',
+  xl: '1.75rem',
+  tile: '1.125rem',
+  card: '1.25rem',
+  stage: '1.75rem',
   pill: '999px',
 } as const;
 
-// A real elevation ramp — the old system had none, so every card read as equally
-// important and the eye had nowhere to land.
 export const SHADOW = {
-  sm: '0 1px 2px rgba(0, 0, 0, 0.30)',
-  md: '0 4px 12px rgba(0, 0, 0, 0.35)',
-  lg: '0 12px 32px rgba(0, 0, 0, 0.45)',
+  sm: '0 10px 28px rgba(20,19,26,.045)',
+  md: '0 14px 40px rgba(20,19,26,.05)',
+  lg: '0 26px 70px rgba(20,19,26,.08)',
+  cta: '0 16px 40px rgba(20,19,26,.20)',
 } as const;
 
 export const FONT = {
-  sans: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-  mono: "'JetBrains Mono', 'Fira Code', ui-monospace, monospace",
+  sans: "'Bricolage Grotesque', system-ui, sans-serif",
+  mono: "'IBM Plex Mono', ui-monospace, monospace",
 } as const;
 
-/** Respect the user's reduced-motion setting for any non-essential animation. */
 export const prefersReducedMotion = (): boolean =>
-  typeof window !== 'undefined' &&
-  window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
+  typeof window !== 'undefined'
+  && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
 
 export const MOTION = {
-  fast: prefersReducedMotion() ? '0ms' : '120ms',
-  base: prefersReducedMotion() ? '0ms' : '200ms',
-  slow: prefersReducedMotion() ? '0ms' : '360ms',
-  ease: 'cubic-bezier(0.22, 1, 0.36, 1)',
+  fast: prefersReducedMotion() ? '0ms' : '200ms',
+  base: prefersReducedMotion() ? '0ms' : '250ms',
+  slow: prefersReducedMotion() ? '0ms' : '600ms',
+  ease: 'ease',
 } as const;

@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { Button } from '@shared-components/ui';
 import type { Completeness } from '../useProfileCompleteness';
-import { COLORS, RADIUS, MOTION, buttonStyle } from '../styles';
+import { COLORS, RADIUS, MOTION, FONT } from '../styles';
 
 interface CompletenessCardProps {
   completeness: Completeness;
@@ -26,7 +27,7 @@ export function CompletenessCard({ completeness, onJump }: CompletenessCardProps
       style={{
         background: COLORS.surface,
         border: `1px solid ${complete ? COLORS.borderSubtle : COLORS.accent}`,
-        borderRadius: RADIUS.lg,
+        borderRadius: RADIUS.card,
         padding: '1.35rem',
       }}
     >
@@ -58,50 +59,13 @@ export function CompletenessCard({ completeness, onJump }: CompletenessCardProps
           <p style={{ color: COLORS.textSecondary, fontSize: '0.78rem', margin: '0.25rem 0 0.75rem', lineHeight: 1.45 }}>
             {next.rationale}
           </p>
-          <button
-            type="button"
-            className="pv-focusable"
-            onClick={() => onJump(next.target)}
-            style={{ ...buttonStyle('primary'), minHeight: 'auto', padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
-          >
-            Do it now
-          </button>
+          <Button type="button" size="compact" onClick={() => onJump(next.target)}>Do it now</Button>
         </div>
       )}
 
-      <button
-        type="button"
-        className="pv-focusable"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.3rem',
-          background: 'none',
-          border: 'none',
-          color: COLORS.textMuted,
-          fontSize: '0.78rem',
-          cursor: 'pointer',
-          padding: '0.5rem 0 0',
-        }}
-      >
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          style={{ transform: open ? 'rotate(90deg)' : 'none', transition: `transform ${MOTION.fast}` }}
-          aria-hidden="true"
-        >
-          <path d="m9 18 6-6-6-6" />
-        </svg>
+      <Button type="button" variant="ghost" size="compact" className="mt-2" onClick={() => setOpen((value) => !value)} aria-expanded={open}>
         {open ? 'Hide checklist' : 'Show checklist'}
-      </button>
+      </Button>
 
       {open && (
         <ul style={{ listStyle: 'none', margin: '0.75rem 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
@@ -125,26 +89,8 @@ export function CompletenessCard({ completeness, onJump }: CompletenessCardProps
                   fontSize: '0.8rem',
                 }}
               >
-                <span
-                  aria-hidden="true"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '1rem',
-                    height: '1rem',
-                    flexShrink: 0,
-                    borderRadius: '50%',
-                    border: `1.5px solid ${item.done ? COLORS.success : COLORS.border}`,
-                    background: item.done ? COLORS.success : 'transparent',
-                    color: COLORS.canvas,
-                  }}
-                >
-                  {item.done && (
-                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M20 6 9 17l-5-5" />
-                    </svg>
-                  )}
+                <span aria-hidden="true" style={{ color: item.done ? COLORS.success : COLORS.textMuted, fontFamily: FONT.mono, fontSize: '0.65rem', width: '2.4rem', flexShrink: 0 }}>
+                  {item.done ? 'done' : 'todo'}
                 </span>
                 <span style={{ textDecoration: item.done ? 'line-through' : 'none' }}>{item.label}</span>
               </button>

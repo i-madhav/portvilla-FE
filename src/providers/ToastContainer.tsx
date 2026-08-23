@@ -1,79 +1,32 @@
-import { useToast, type Toast } from './ToastContext';
+import { Button } from '@shared-components/ui';
+import { useToast, type Toast } from './toast';
+
+const labels: Record<Toast['type'], string> = {
+  success: 'complete',
+  error: 'error',
+  info: 'notice',
+};
 
 function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) {
-  const colors: Record<Toast['type'], { bg: string; border: string; title: string; msg: string }> = {
-    success: { bg: '#2B5748', border: '#618764', title: '#9CB080', msg: '#618764' },
-    error:   { bg: '#3a2828', border: '#8b3a3a', title: '#ff9e9e', msg: '#c07070' },
-    info:    { bg: '#273338', border: '#618764', title: '#9CB080', msg: '#618764' },
-  };
-  const c = colors[toast.type];
-
   return (
-    <div
-      role="alert"
-      style={{
-        background: c.bg,
-        border: `1px solid ${c.border}`,
-        borderRadius: '0.75rem',
-        padding: '0.75rem 1rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        gap: '0.75rem',
-        minWidth: '280px',
-        maxWidth: '380px',
-        boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
-      }}
-    >
-      <div>
-        <p style={{ color: c.title, fontSize: '0.8125rem', fontWeight: 600, margin: 0 }}>
-          {toast.title}
-        </p>
-        {toast.message && (
-          <p style={{ color: c.msg, fontSize: '0.75rem', margin: '2px 0 0' }}>
-            {toast.message}
-          </p>
-        )}
+    <div role="alert" className="surface-glass flex min-w-72 max-w-sm items-start justify-between gap-4 p-4">
+      <div className="grid gap-1">
+        <p className="font-mono text-label uppercase text-violet">{labels[toast.type]} / {toast.title}</p>
+        {toast.message ? <p className="text-micro text-ink-60">{toast.message}</p> : null}
       </div>
-      <button
-        onClick={onDismiss}
-        style={{
-          background: 'transparent',
-          border: 'none',
-          color: c.msg,
-          cursor: 'pointer',
-          fontSize: '1rem',
-          lineHeight: 1,
-          padding: '0 2px',
-          flexShrink: 0,
-        }}
-        aria-label="Dismiss"
-      >
-        ×
-      </button>
+      <Button variant="ghost" size="compact" className="min-h-0 shrink-0 px-2 py-1" onClick={onDismiss} aria-label="Dismiss notification">×</Button>
     </div>
   );
 }
 
 export function ToastContainer() {
   const { toasts, dismissToast } = useToast();
-
   if (toasts.length === 0) return null;
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        bottom: '1.5rem',
-        right: '1.5rem',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.5rem',
-        zIndex: 9999,
-      }}
-    >
-      {toasts.map((t) => (
-        <ToastItem key={t.id} toast={t} onDismiss={() => dismissToast(t.id)} />
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
+      {toasts.map((toast) => (
+        <ToastItem key={toast.id} toast={toast} onDismiss={() => dismissToast(toast.id)} />
       ))}
     </div>
   );
