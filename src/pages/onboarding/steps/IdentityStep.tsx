@@ -81,8 +81,8 @@ export function IdentityStep({ initial, onContinue, busy }: IdentityStepProps) {
       }}
     >
       <StepHeader
-        title="Introduce yourself"
-        subtitle="The basics your visitors — and your AI agent — will lead with."
+        title="Give your agent the essentials"
+        subtitle="Start with the facts it needs to introduce and represent you accurately. You can add depth later."
       />
 
       <Field label="This profile is for" htmlFor="pv-entity">
@@ -119,7 +119,7 @@ export function IdentityStep({ initial, onContinue, busy }: IdentityStepProps) {
         label="Tagline"
         htmlFor="pv-tagline"
         optional
-        hint="One line. This sits directly under your name."
+        hint="One line your agent can use to explain what you do."
       >
         <input
           id="pv-tagline"
@@ -225,16 +225,16 @@ export function IdentityStep({ initial, onContinue, busy }: IdentityStepProps) {
       )}
 
       <StepActions
-        continueLabel="Create my profile"
+        continueLabel="Save core context"
         disabled={!canContinue}
         busy={busy}
         disabledHint="Add your name to continue."
       />
 
-      {/* The point where this stops being a form and starts being a real record.
-          Deliberately says "created", not "live" — visibility may be private. */}
+      {/* The point where this stops being a draft and starts saving to the
+          agent's knowledge record. Visibility may still be private. */}
       <p style={{ color: COLORS.textMuted, fontSize: '0.73rem', margin: '0.75rem 0 0', textAlign: 'center' }}>
-        Your profile is created here. Everything after this saves as you go.
+        Your agent’s knowledge record starts here. Every later step saves as you go.
       </p>
     </form>
   );

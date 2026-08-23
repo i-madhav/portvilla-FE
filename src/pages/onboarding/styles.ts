@@ -17,15 +17,11 @@ export const pageStyle: CSSProperties = {
   padding: `${SPACE['2xl']} ${SPACE.lg} ${SPACE['3xl']}`,
 };
 
-/**
- * Two columns on desktop: the form, and a live preview of the profile being
- * built. Filling six steps of forms with no sight of the result is the reason
- * the flow felt like paperwork. Below 60rem the preview drops away rather than
- * competing with the form for width.
- */
+/** A single, focused column. The product creates a voice representative, so a
+ * fake web-page preview would teach the wrong mental model during setup. */
 export const shellStyle: CSSProperties = {
   width: '100%',
-  maxWidth: '73.75rem',
+  maxWidth: '42rem',
   margin: '0 auto',
   display: 'grid',
   gridTemplateColumns: 'minmax(0, 1fr)',
@@ -42,7 +38,7 @@ export const formColumnStyle: CSSProperties = {
   boxShadow: SHADOW.lg,
   padding: 'clamp(1.35rem, 4vw, 2rem)',
   width: '100%',
-  maxWidth: '32rem',
+  maxWidth: '42rem',
   margin: '0 auto',
   boxSizing: 'border-box',
 };

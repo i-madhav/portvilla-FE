@@ -36,7 +36,7 @@ export function CompletenessCard({ completeness, onJump }: CompletenessCardProps
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <h2 style={{ color: COLORS.textPrimary, fontSize: '0.98rem', fontWeight: 700, margin: 0 }}>
-            {complete ? 'Your profile is complete' : 'Finish your profile'}
+            {complete ? 'Your agent has the essentials' : 'Agent readiness'}
           </h2>
           <p style={{ color: COLORS.textMuted, fontSize: '0.78rem', margin: '0.2rem 0 0' }}>
             {done} of {total} done
@@ -59,7 +59,7 @@ export function CompletenessCard({ completeness, onJump }: CompletenessCardProps
           <p style={{ color: COLORS.textSecondary, fontSize: '0.78rem', margin: '0.25rem 0 0.75rem', lineHeight: 1.45 }}>
             {next.rationale}
           </p>
-          <Button type="button" size="compact" onClick={() => onJump(next.target)}>Do it now</Button>
+          <Button type="button" size="compact" onClick={() => onJump(next.target)}>Open this section</Button>
         </div>
       )}
 

@@ -37,9 +37,9 @@ const SPEED_LABELS: Record<AgentSpeakingSpeed, string> = { slow: 'Slow', normal:
 /** Renders the two agent-configuration cards: LLM connection + voice persona. */
 export function AgentConfigSection({ profile, save }: SectionProps) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-      <AiProviderCard profile={profile} save={save} />
+    <div className="pv-overview-grid">
       <VoicePersonaCard profile={profile} save={save} />
+      <AiProviderCard profile={profile} save={save} />
     </div>
   );
 }
@@ -50,8 +50,8 @@ function AiProviderCard({ profile, save }: SectionProps) {
   const ai = profile.aiSettings;
   return (
     <EditableSection
-      title="AI Provider"
-      description="The LLM that powers your agent's answers."
+      title="Content AI connection"
+      description="Optional provider used for tasks such as repository summaries. It does not control the live voice model."
       view={
         <div>
           <KeyValue label="Provider" value={PROVIDER_OPTIONS.find((p) => p.value === ai.provider)?.label ?? ai.provider} />
@@ -112,7 +112,7 @@ function AiProviderEdit({
   return (
     <form onSubmit={submit}>
       <label style={{ ...miniLabel, marginTop: 0 }}>Provider</label>
-      <select value={provider} onChange={(e) => setProvider(e.target.value as LlmProvider)} style={selectStyle()}>
+      <select aria-label="Content AI provider" value={provider} onChange={(e) => setProvider(e.target.value as LlmProvider)} style={selectStyle()}>
         {PROVIDER_OPTIONS.map((opt) => (
           <option key={opt.value} value={opt.value}>
             {opt.label}
@@ -121,13 +121,14 @@ function AiProviderEdit({
       </select>
 
       <label style={miniLabel}>Model</label>
-      <input value={model} onChange={(e) => setModel(e.target.value)} style={inputStyle()} placeholder="e.g. gpt-4o, claude-sonnet-4.5" />
+      <input aria-label="Content AI model" value={model} onChange={(e) => setModel(e.target.value)} style={inputStyle()} placeholder="e.g. gpt-4o, claude-sonnet-4.5" />
 
       <label style={miniLabel}>Base URL</label>
-      <input value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} style={inputStyle()} placeholder="Optional — for custom / self-hosted" />
+      <input aria-label="Content AI base URL" value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} style={inputStyle()} placeholder="Optional — for custom / self-hosted" />
 
       <label style={miniLabel}>API key</label>
       <input
+        aria-label="Content AI API key"
         type="password"
         value={apiKey}
         onChange={(e) => setApiKey(e.target.value)}
@@ -147,8 +148,8 @@ function VoicePersonaCard({ profile, save }: SectionProps) {
   const p = profile.agentPersona;
   return (
     <EditableSection
-      title="Voice & Persona"
-      description="How your agent sounds and behaves on calls."
+      title="Conversation style"
+      description="The name, tone and pacing visitors experience when they talk to your representative."
       view={
         <div>
           <KeyValue label="Agent name" value={p.agentName} />
@@ -202,15 +203,17 @@ function VoicePersonaEdit({
   };
 
   const Select = ({
+    label,
     value,
     onChange,
     options,
   }: {
+    label: string;
     value: string;
     onChange: (v: string) => void;
     options: { value: string; label: string }[];
   }) => (
-    <select value={value} onChange={(e) => onChange(e.target.value)} style={selectStyle()}>
+    <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value)} style={selectStyle()}>
       {options.map((opt) => (
         <option key={opt.value} value={opt.value}>
           {opt.label}
@@ -222,19 +225,19 @@ function VoicePersonaEdit({
   return (
     <form onSubmit={submit}>
       <label style={{ ...miniLabel, marginTop: 0 }}>Agent name</label>
-      <input value={agentName} onChange={(e) => setAgentName(e.target.value)} style={inputStyle(agentName.trim() ? 'default' : 'error')} maxLength={32} />
+      <input aria-label="Agent name" value={agentName} onChange={(e) => setAgentName(e.target.value)} style={inputStyle(agentName.trim() ? 'default' : 'error')} maxLength={32} />
 
       <label style={miniLabel}>Tone</label>
-      <Select value={tone} onChange={(v) => setTone(v as AgentTone)} options={labelsToOptions(TONE_LABELS)} />
+      <Select label="Agent tone" value={tone} onChange={(v) => setTone(v as AgentTone)} options={labelsToOptions(TONE_LABELS)} />
 
       <label style={miniLabel}>Verbosity</label>
-      <Select value={verbosity} onChange={(v) => setVerbosity(v as AgentVerbosity)} options={labelsToOptions(VERBOSITY_LABELS)} />
+      <Select label="Agent verbosity" value={verbosity} onChange={(v) => setVerbosity(v as AgentVerbosity)} options={labelsToOptions(VERBOSITY_LABELS)} />
 
       <label style={miniLabel}>Technical depth</label>
-      <Select value={technicalDepth} onChange={(v) => setTechnicalDepth(v as AgentTechnicalDepth)} options={labelsToOptions(DEPTH_LABELS)} />
+      <Select label="Agent technical depth" value={technicalDepth} onChange={(v) => setTechnicalDepth(v as AgentTechnicalDepth)} options={labelsToOptions(DEPTH_LABELS)} />
 
       <label style={miniLabel}>Speaking speed</label>
-      <Select value={speakingSpeed} onChange={(v) => setSpeakingSpeed(v as AgentSpeakingSpeed)} options={labelsToOptions(SPEED_LABELS)} />
+      <Select label="Agent speaking speed" value={speakingSpeed} onChange={(v) => setSpeakingSpeed(v as AgentSpeakingSpeed)} options={labelsToOptions(SPEED_LABELS)} />
 
       <EditActions onCancel={done} saving={saving} />
     </form>

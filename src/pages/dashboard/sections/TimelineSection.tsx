@@ -101,12 +101,13 @@ function TimelineEdit({
         makeEmpty={makeEmpty}
         addLabel="Add an entry"
         emptyHint="No entries yet."
-        renderItem={(item, update) => (
+        renderItem={(item, update, index) => (
           <>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <div style={{ flex: 1 }}>
                 <label style={miniLabel}>Type</label>
                 <select
+                  aria-label={`Experience ${index + 1} type`}
                   value={item.category}
                   onChange={(e) => update({ category: e.target.value as TimelineCategory })}
                   style={selectStyle()}
@@ -121,6 +122,7 @@ function TimelineEdit({
               <div style={{ flex: 1 }}>
                 <label style={miniLabel}>Organization</label>
                 <input
+                  aria-label={`Experience ${index + 1} organization`}
                   value={item.organization ?? ''}
                   onChange={(e) => update({ organization: e.target.value || null })}
                   style={inputStyle()}
@@ -129,16 +131,17 @@ function TimelineEdit({
             </div>
             <div>
               <label style={miniLabel}>Title / Label</label>
-              <input value={item.label} onChange={(e) => update({ label: e.target.value })} style={inputStyle()} />
+              <input aria-label={`Experience ${index + 1} title`} value={item.label} onChange={(e) => update({ label: e.target.value })} style={inputStyle()} />
             </div>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <div style={{ flex: 1 }}>
                 <label style={miniLabel}>Start</label>
-                <input type="month" value={item.date} onChange={(e) => update({ date: e.target.value })} style={inputStyle()} />
+                <input aria-label={`Experience ${index + 1} start date`} type="month" value={item.date} onChange={(e) => update({ date: e.target.value })} style={inputStyle()} />
               </div>
               <div style={{ flex: 1 }}>
                 <label style={miniLabel}>End (blank = present)</label>
                 <input
+                  aria-label={`Experience ${index + 1} end date`}
                   type="month"
                   value={item.endDate ?? ''}
                   onChange={(e) => update({ endDate: e.target.value || null })}
@@ -149,6 +152,7 @@ function TimelineEdit({
             <div>
               <label style={miniLabel}>Description</label>
               <textarea
+                aria-label={`Experience ${index + 1} description`}
                 value={item.description ?? ''}
                 onChange={(e) => update({ description: e.target.value || null })}
                 style={textareaStyle()}

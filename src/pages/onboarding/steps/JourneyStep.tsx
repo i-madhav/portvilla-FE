@@ -1,12 +1,13 @@
 import { useState, useMemo } from 'react';
-import type { TimelineEntryDto, TimelineCategory } from '@typings/profileApi';
-import { TimelineCategory as Category } from '@typings/profileApi';
+import type { EntityType, TimelineEntryDto, TimelineCategory } from '@typings/profileApi';
+import { EntityType as EntityTypeEnum, TimelineCategory as Category } from '@typings/profileApi';
 import { RepeatableList } from '@shared-components/forms/RepeatableList';
 import { StepActions } from '../components/StepActions';
 import { StepHeader } from '../components/StepHeader';
 import { COLORS, labelStyle, inputStyle, textareaStyle, selectStyle, noticeStyle } from '../styles';
 
 interface JourneyStepProps {
+  entityType: EntityType;
   initial: TimelineEntryDto[];
   suggested: TimelineEntryDto[];
   onContinue: (timeline: TimelineEntryDto[]) => void;
@@ -15,8 +16,8 @@ interface JourneyStepProps {
   busy: boolean;
 }
 
-const makeEmpty = (): TimelineEntryDto => ({
-  category: Category.Career,
+const makeEmpty = (entityType: EntityType): TimelineEntryDto => ({
+  category: entityType === EntityTypeEnum.Individual ? Category.Career : Category.Milestone,
   date: '',
   endDate: null,
   label: '',
@@ -44,6 +45,7 @@ const isBlank = (t: TimelineEntryDto) =>
 const isComplete = (t: TimelineEntryDto) => !!t.label.trim() && !!t.date.trim();
 
 export function JourneyStep({
+  entityType,
   initial,
   suggested,
   onContinue,
@@ -54,6 +56,7 @@ export function JourneyStep({
   const [items, setItems] = useState<TimelineEntryDto[]>(() =>
     initial.length ? initial : suggested,
   );
+  const isIndividual = entityType === EntityTypeEnum.Individual;
 
   // A row with content but no date/title used to be dropped on Continue without
   // a word — the user's typing simply disappeared. Now it blocks and says which
@@ -75,8 +78,12 @@ export function JourneyStep({
   return (
     <form onSubmit={handleSubmit}>
       <StepHeader
-        title="Your journey"
-        subtitle="Roles, education and milestones — the timeline your agent can walk a visitor through."
+        title={isIndividual ? 'Your journey' : 'Milestones'}
+        subtitle={
+          isIndividual
+            ? 'Roles, education and milestones — the timeline your agent can walk a visitor through.'
+            : 'Launches, funding, awards and other milestones — the timeline your agent can walk a visitor through.'
+        }
       />
 
       {suggested.length > 0 && initial.length === 0 && (
@@ -90,10 +97,14 @@ export function JourneyStep({
       <RepeatableList
         items={items}
         onChange={setItems}
-        makeEmpty={makeEmpty}
+        makeEmpty={() => makeEmpty(entityType)}
         addLabel="Add an entry"
         itemNoun="entry"
-        emptyHint="Nothing here yet. Add a role, a degree, or a moment that mattered."
+        emptyHint={
+          isIndividual
+            ? 'Nothing here yet. Add a role, a degree, or a moment that mattered.'
+            : 'Nothing here yet. Add a launch, a raise, or a moment that mattered.'
+        }
         renderItem={(item, update, index) => {
           const flawed = !isBlank(item) && !isComplete(item);
           return (

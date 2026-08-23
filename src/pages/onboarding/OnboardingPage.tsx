@@ -8,7 +8,6 @@ import { Brand } from '@shared-components/ui';
 
 import { pageStyle, shellStyle, formColumnStyle, COLORS } from './styles';
 import { StepIndicator } from './components/StepIndicator';
-import { ProfilePreview } from './components/ProfilePreview';
 import { AccountStep } from './steps/AccountStep';
 import { IdentityStep } from './steps/IdentityStep';
 import { ResumeStep } from './steps/ResumeStep';
@@ -18,7 +17,6 @@ import { WorkStep } from './steps/WorkStep';
 import { ContactStep } from './steps/ContactStep';
 import {
   useOnboardingFlow,
-  STEPS,
   stepIndex,
   hasOnboardingInProgress,
   clearDraft,
@@ -98,21 +96,21 @@ export function OnboardingPage() {
     );
   }
 
-  const index = stepIndex(flow.step);
+  const index = stepIndex(flow.step, flow.steps);
   const { busy, data } = { busy: flow.isCommitting, data: flow.data };
 
   return (
     <div style={pageStyle}>
       <header className="mx-auto mb-6 flex w-full max-w-content items-center justify-between gap-4">
         <Brand />
-        <p className="font-mono text-label uppercase text-ink-45">setup / {String(index + 1).padStart(2, '0')} of {String(STEPS.length).padStart(2, '0')}</p>
+        <p className="font-mono text-label uppercase text-ink-45">agent setup / {String(index + 1).padStart(2, '0')} of {String(flow.steps.length).padStart(2, '0')}</p>
       </header>
       <div className="pv-onboarding-shell" style={shellStyle}>
         <div className="pv-form-column" style={formColumnStyle}>
           <StepIndicator
             currentIndex={index}
-            total={STEPS.length}
-            label={STEPS[index].label}
+            total={flow.steps.length}
+            label={flow.steps[index].label}
             onBack={index > 0 ? flow.goBack : undefined}
           />
 
@@ -157,6 +155,7 @@ export function OnboardingPage() {
 
           {flow.step === 'journey' && (
             <JourneyStep
+              entityType={data.identity.entityType}
               initial={data.timeline}
               suggested={suggestions.timeline}
               busy={busy}
@@ -185,8 +184,6 @@ export function OnboardingPage() {
             />
           )}
         </div>
-
-        <ProfilePreview data={data} />
       </div>
     </div>
   );

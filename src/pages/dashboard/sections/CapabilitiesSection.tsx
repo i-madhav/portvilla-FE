@@ -89,11 +89,12 @@ function CapabilitiesEdit({
         makeEmpty={makeEmpty}
         addLabel="Add a skill"
         emptyHint="No skills yet."
-        renderItem={(item, update) => (
+        renderItem={(item, update, index) => (
           <>
             <div>
               <label style={miniLabel}>Skill</label>
               <input
+                aria-label={`Skill ${index + 1} name`}
                 value={item.name}
                 onChange={(e) => update({ name: e.target.value })}
                 style={inputStyle()}
@@ -104,6 +105,7 @@ function CapabilitiesEdit({
               <div style={{ flex: 1 }}>
                 <label style={miniLabel}>Category</label>
                 <input
+                  aria-label={`Skill ${index + 1} category`}
                   value={item.category ?? ''}
                   onChange={(e) => update({ category: e.target.value || null })}
                   style={inputStyle()}
@@ -112,6 +114,7 @@ function CapabilitiesEdit({
               <div style={{ flex: 1 }}>
                 <label style={miniLabel}>Level</label>
                 <select
+                  aria-label={`Skill ${index + 1} proficiency`}
                   value={item.proficiency ?? ''}
                   onChange={(e) =>
                     update({ proficiency: (e.target.value || null) as CapabilityProficiency | null })

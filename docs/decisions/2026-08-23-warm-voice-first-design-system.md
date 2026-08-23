@@ -67,7 +67,7 @@ No separate traffic-light palette is introduced. Violet expresses active, comple
 - Glass cards use translucent raised paper, 20px blur, an `ink/8` border, and a low neutral shadow.
 - Card hover changes only the border to violet at 45% and lifts 4px. It does not scale, recolor, or change shadow.
 
-Authenticated shells retain purpose-specific layouts: onboarding is a form plus live preview when width permits; dashboard is a navigation rail plus an auto-fitting bento content area. They consume the same surface, typography, control, and color tokens.
+Authenticated shells retain purpose-specific layouts: onboarding is one focused form column, because a static page preview misrepresents the voice product; the dashboard is a navigation rail plus an auto-fitting bento content area organized around tuning, grounding, sharing, and monitoring the agent. They consume the same surface, typography, control, and color tokens.
 
 The root landing is full-viewport, camera-led, and intentionally does not use the paper, glass-card, or application-grid layout. Its fixed canvas is paired with a document-height scroll spacer so GSAP can scrub the tunnel journey.
 

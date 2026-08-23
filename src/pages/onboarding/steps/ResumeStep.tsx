@@ -57,8 +57,8 @@ export function ResumeStep({ onSuggestions, onSkip, onFinishNow }: ResumeStepPro
   return (
     <div>
       <StepHeader
-        title="Skip the typing"
-        subtitle="Upload your resume and we'll draft your skills, journey and work from it. You review everything before it's saved — nothing is published from this."
+        title="Teach it from your resume"
+        subtitle="Upload a PDF and we’ll draft the expertise, experience and work your agent can discuss. You review every suggestion before it is saved."
       />
 
       {outcome === 'stored-only' ? (

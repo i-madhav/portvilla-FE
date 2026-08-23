@@ -21,7 +21,7 @@ import { SocialSection } from './sections/SocialSection';
 import { AgentConfigSection } from './sections/AgentConfigSection';
 import { ExtraSections } from './sections/ExtraSections';
 
-const SECTION_IDS = ['identity', 'capabilities', 'timeline', 'works', 'social', 'agent', 'more'];
+const SECTION_IDS = ['agent', 'identity', 'capabilities', 'timeline', 'works', 'social', 'more'];
 
 export function DashboardPage() {
   const navigate = useNavigate();
@@ -102,13 +102,13 @@ export function DashboardPage() {
   const incompleteTargets = new Set(completeness.items.filter((i) => !i.done).map((i) => i.target));
 
   const navItems: NavItem[] = [
-    { id: 'identity', label: 'Identity' },
-    { id: 'capabilities', label: 'Skills' },
-    { id: 'timeline', label: 'Journey' },
+    { id: 'agent', label: 'Voice settings' },
+    { id: 'identity', label: 'About you' },
+    { id: 'capabilities', label: 'Expertise' },
+    { id: 'timeline', label: 'Experience' },
     { id: 'works', label: 'Work' },
     { id: 'social', label: 'Contact' },
-    { id: 'agent', label: 'AI agent' },
-    { id: 'more', label: 'More' },
+    { id: 'more', label: 'More context' },
   ].map((i) => ({ ...i, needsAttention: incompleteTargets.has(i.id) }));
 
   const account: NavAccount = {
@@ -128,7 +128,7 @@ export function DashboardPage() {
         <DashboardNav items={navItems} activeId={activeId} onSelect={jumpTo} account={account} />
 
         <div style={containerStyle}>
-          <ProfileHero profile={profile} onLogout={handleLogout} />
+          <ProfileHero profile={profile} onLogout={handleLogout} save={save} />
 
           <div className="pv-overview-grid">
             <CompletenessCard completeness={completeness} onJump={jumpTo} />
@@ -136,6 +136,20 @@ export function DashboardPage() {
           </div>
 
           <div className="pv-section-grid">
+            <div className="pv-span-2" style={{ padding: '1.25rem 0 0.25rem' }}>
+              <p className="meta">01 / tune the conversation</p>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink">How your agent speaks</h2>
+              <p className="mt-2 max-w-reading text-base text-ink-60">Set its name and conversation style. Content-provider settings are optional and separate from the live voice model.</p>
+            </div>
+            <div id="agent" ref={setRef('agent')} className="pv-span-2" style={{ scrollMarginTop: '1.5rem' }}>
+              <AgentConfigSection profile={profile} save={save} />
+            </div>
+
+            <div className="pv-span-2" style={{ padding: '2rem 0 0.25rem' }}>
+              <p className="meta">02 / ground the answers</p>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink">What your agent knows</h2>
+              <p className="mt-2 max-w-reading text-base text-ink-60">Keep these facts specific and current. They are the source material your representative uses when visitors ask about you.</p>
+            </div>
             <div id="identity" ref={setRef('identity')} className="pv-span-2" style={{ scrollMarginTop: '1.5rem' }}>
               <IdentitySection profile={profile} save={save} />
             </div>
@@ -150,9 +164,6 @@ export function DashboardPage() {
             </div>
             <div id="social" ref={setRef('social')} style={{ scrollMarginTop: '1.5rem' }}>
               <SocialSection profile={profile} save={save} />
-            </div>
-            <div id="agent" ref={setRef('agent')} style={{ scrollMarginTop: '1.5rem' }}>
-              <AgentConfigSection profile={profile} save={save} />
             </div>
             <div id="more" ref={setRef('more')} className="pv-span-2" style={{ scrollMarginTop: '1.5rem' }}>
               <ExtraSections profile={profile} />

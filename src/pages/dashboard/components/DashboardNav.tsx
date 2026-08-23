@@ -53,6 +53,7 @@ export function DashboardNav({ items, activeId, onSelect, account }: DashboardNa
                 flex: '0 0 auto',
                 justifyContent: 'flex-start',
                 whiteSpace: 'nowrap',
+                minHeight: '2.75rem',
                 padding: '0.65rem 0.75rem',
                 borderRadius: RADIUS.pill,
                 border: `1px solid ${active ? COLORS.accent : 'transparent'}`,

@@ -87,7 +87,7 @@ function IdentityEdit({
   return (
     <form onSubmit={submit}>
       <label style={{ ...miniLabel, marginTop: 0 }}>Type</label>
-      <select value={entityType} onChange={(e) => setEntityType(e.target.value as EntityType)} style={selectStyle()}>
+      <select aria-label="Profile type" value={entityType} onChange={(e) => setEntityType(e.target.value as EntityType)} style={selectStyle()}>
         {Object.entries(ENTITY_LABELS).map(([value, label]) => (
           <option key={value} value={value}>
             {label}
@@ -96,30 +96,30 @@ function IdentityEdit({
       </select>
 
       <label style={miniLabel}>Name</label>
-      <input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle(name.trim() ? 'default' : 'error')} />
+      <input aria-label="Name" value={name} onChange={(e) => setName(e.target.value)} style={inputStyle(name.trim() ? 'default' : 'error')} />
 
       <label style={miniLabel}>Tagline</label>
-      <input value={tagline} onChange={(e) => setTagline(e.target.value)} style={inputStyle()} maxLength={120} />
+      <input aria-label="Tagline" value={tagline} onChange={(e) => setTagline(e.target.value)} style={inputStyle()} maxLength={120} />
 
       <label style={miniLabel}>Bio</label>
-      <textarea value={bio} onChange={(e) => setBio(e.target.value)} style={textareaStyle()} rows={2} maxLength={500} />
+      <textarea aria-label="Bio" value={bio} onChange={(e) => setBio(e.target.value)} style={textareaStyle()} rows={2} maxLength={500} />
 
       <label style={miniLabel}>About</label>
-      <textarea value={about} onChange={(e) => setAbout(e.target.value)} style={textareaStyle()} rows={4} maxLength={2000} />
+      <textarea aria-label="About" value={about} onChange={(e) => setAbout(e.target.value)} style={textareaStyle()} rows={4} maxLength={2000} />
 
       <div style={{ display: 'flex', gap: '0.75rem' }}>
         <div style={{ flex: 1 }}>
           <label style={miniLabel}>Location</label>
-          <input value={location} onChange={(e) => setLocation(e.target.value)} style={inputStyle()} />
+          <input aria-label="Location" value={location} onChange={(e) => setLocation(e.target.value)} style={inputStyle()} />
         </div>
         <div style={{ flex: 1 }}>
           <label style={miniLabel}>Industry</label>
-          <input value={industry} onChange={(e) => setIndustry(e.target.value)} style={inputStyle()} />
+          <input aria-label="Industry" value={industry} onChange={(e) => setIndustry(e.target.value)} style={inputStyle()} />
         </div>
       </div>
 
       <label style={miniLabel}>Availability</label>
-      <input value={availability} onChange={(e) => setAvailability(e.target.value)} style={inputStyle()} />
+      <input aria-label="Availability" value={availability} onChange={(e) => setAvailability(e.target.value)} style={inputStyle()} />
 
       <EditActions onCancel={done} saving={saving} />
     </form>

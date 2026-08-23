@@ -37,32 +37,38 @@ Constraints from the BE docs (respected here):
   `ROUTES.DASHBOARD` → fixed here properly).
 
 ### 2. Onboarding — essentials, multi-step
-Data-driven stepper accumulating one `OnboardingData` object, then a single
-`POST /profiles` at the end. Steps:
-1. **Welcome** (intro)
-2. **Account** — username (live-validated) + visibility (+ protected password)
-3. **Identity** *(required)* — entityType, name, tagline, bio, about, location,
-   industry, availability
+Data-driven stepper accumulating one `OnboardingData` object. The identity step
+creates the profile record; later steps patch it and persist progress. Steps:
+1. **Agent link** — username (live-validated) + visitor access (+ protected password)
+2. **Core context** *(required)* — entityType, name, tagline, bio, about,
+   location, industry, availability
+3. **Resume** *(skippable)* — optional PDF upload and reviewable suggestions
 4. **Expertise** *(skippable)* — `capabilities[]` (name + proficiency + category)
 5. **Experience** *(skippable)* — `timeline[]` (category, label, organization,
    date range, description)
-6. **Projects** *(skippable)* — `works[]` (type, name, tagline, description, url,
+6. **Proof** *(skippable)* — `works[]` (type, name, tagline, description, url,
    technologies)
 7. **Contact** *(skippable, final)* — `social` (links[], email, phone,
-   calendarUrl); "Create profile" submits.
+   calendarUrl); "Finish setup" submits.
 
 Non-identity steps have a "Skip for now" affordance. Array steps use a shared
 `RepeatableList` primitive (add/remove cards) built on the existing
 `onboarding/styles.ts` design system.
 
+The setup shell is deliberately a single focused column. It does not render a
+static public-page preview: the product outcome is a voice representative, and
+showing a conventional page as the result creates the wrong mental model before
+the user has supplied any grounding context.
+
 ### 3. Dashboard — view + inline section editing
 `DashboardPage` fetches `GET /profiles/me` (existing `useOwnProfileQuery`). No
 profile → redirect to `/onboarding`. Renders:
-- **Identity header** (name, tagline, avatar, location, industry, availability).
-- **Editable section cards**: Identity, Capabilities, Timeline, Works, Social.
-- **Agent Config** panel: `aiSettings` (provider, model, baseUrl, API key —
-  write-only, shows "configured" state) + `agentPersona` (agentName, tone,
-  verbosity, technicalDepth, speakingSpeed).
+- **Voice representative header** (agent name, represented identity, access,
+  share controls, and inline visitor-access editing).
+- **Agent readiness + conversation activity** as the first operational overview.
+- **Conversation style** before grounding data, with content-AI credentials
+  explicitly separated from the live voice model.
+- **Editable grounding cards**: Identity, Capabilities, Timeline, Works, Social.
 - **Read-only display** of the remaining sections when non-empty (`offerings`,
   `metrics`, `testimonials`, `team`, `media`, `content`) with an "add on…"
   follow-up note.

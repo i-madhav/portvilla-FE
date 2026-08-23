@@ -94,15 +94,15 @@ function SocialEdit({
         makeEmpty={makeEmptyLink}
         addLabel="Add a link"
         emptyHint="No links yet."
-        renderItem={(item, update) => (
+        renderItem={(item, update, index) => (
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <div style={{ flex: 1 }}>
               <label style={miniLabel}>Platform</label>
-              <input value={item.platform} onChange={(e) => update({ platform: e.target.value })} style={inputStyle()} />
+              <input aria-label={`Link ${index + 1} platform`} value={item.platform} onChange={(e) => update({ platform: e.target.value })} style={inputStyle()} />
             </div>
             <div style={{ flex: 1.6 }}>
               <label style={miniLabel}>URL</label>
-              <input value={item.url} onChange={(e) => update({ url: e.target.value })} style={inputStyle()} placeholder="https://…" />
+              <input aria-label={`Link ${index + 1} URL`} value={item.url} onChange={(e) => update({ url: e.target.value })} style={inputStyle()} placeholder="https://…" />
             </div>
           </div>
         )}
@@ -111,16 +111,16 @@ function SocialEdit({
       <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem' }}>
         <div style={{ flex: 1 }}>
           <label style={miniLabel}>Email</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle()} />
+          <input aria-label="Contact email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle()} />
         </div>
         <div style={{ flex: 1 }}>
           <label style={miniLabel}>Phone</label>
-          <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} style={inputStyle()} />
+          <input aria-label="Contact phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} style={inputStyle()} />
         </div>
       </div>
 
       <label style={{ ...miniLabel, marginTop: '0.75rem' }}>Scheduling link</label>
-      <input type="url" value={calendarUrl} onChange={(e) => setCalendarUrl(e.target.value)} style={inputStyle()} placeholder="https://cal.com/you" />
+      <input aria-label="Scheduling link" type="url" value={calendarUrl} onChange={(e) => setCalendarUrl(e.target.value)} style={inputStyle()} placeholder="https://cal.com/you" />
 
       <EditActions onCancel={done} saving={saving} />
     </form>

@@ -114,12 +114,12 @@ function WorksEdit({
         makeEmpty={makeEmpty}
         addLabel="Add a project"
         emptyHint="No projects yet."
-        renderItem={(item, update) => (
+        renderItem={(item, update, index) => (
           <>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <div style={{ flex: 1 }}>
                 <label style={miniLabel}>Type</label>
-                <select value={item.type} onChange={(e) => update({ type: e.target.value as WorkType })} style={selectStyle()}>
+                <select aria-label={`Work ${index + 1} type`} value={item.type} onChange={(e) => update({ type: e.target.value as WorkType })} style={selectStyle()}>
                   {TYPE_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
                       {opt.label}
@@ -129,12 +129,13 @@ function WorksEdit({
               </div>
               <div style={{ flex: 1.4 }}>
                 <label style={miniLabel}>Name</label>
-                <input value={item.name} onChange={(e) => update({ name: e.target.value })} style={inputStyle()} />
+                <input aria-label={`Work ${index + 1} name`} value={item.name} onChange={(e) => update({ name: e.target.value })} style={inputStyle()} />
               </div>
             </div>
             <div>
               <label style={miniLabel}>Tagline</label>
               <input
+                aria-label={`Work ${index + 1} tagline`}
                 value={item.tagline ?? ''}
                 onChange={(e) => update({ tagline: e.target.value || null })}
                 style={inputStyle()}
@@ -142,16 +143,17 @@ function WorksEdit({
             </div>
             <div>
               <label style={miniLabel}>Description</label>
-              <textarea value={item.description} onChange={(e) => update({ description: e.target.value })} style={textareaStyle()} rows={2} />
+              <textarea aria-label={`Work ${index + 1} description`} value={item.description} onChange={(e) => update({ description: e.target.value })} style={textareaStyle()} rows={2} />
             </div>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <div style={{ flex: 1 }}>
                 <label style={miniLabel}>Link</label>
-                <input value={item.url ?? ''} onChange={(e) => update({ url: e.target.value || null })} style={inputStyle()} placeholder="https://…" />
+                <input aria-label={`Work ${index + 1} link`} value={item.url ?? ''} onChange={(e) => update({ url: e.target.value || null })} style={inputStyle()} placeholder="https://…" />
               </div>
               <div style={{ flex: 1 }}>
                 <label style={miniLabel}>Tech (comma-separated)</label>
                 <input
+                  aria-label={`Work ${index + 1} technologies`}
                   value={arrayToCsv(item.technologies)}
                   onChange={(e) => update({ technologies: csvToArray(e.target.value) })}
                   style={inputStyle()}

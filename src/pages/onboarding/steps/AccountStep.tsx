@@ -30,9 +30,9 @@ interface AccountStepProps {
 }
 
 const VISIBILITY_OPTIONS: { value: ProfileVisibility; label: string; description: string }[] = [
-  { value: 'public', label: 'Public', description: 'Anyone with the link can view it' },
-  { value: 'protected', label: 'Password-protected', description: 'Visitors need a password' },
-  { value: 'private', label: 'Private', description: 'Only you — publish when ready' },
+  { value: 'public', label: 'Public', description: 'Anyone with the link can talk to your agent' },
+  { value: 'protected', label: 'Password-protected', description: 'Visitors enter a password first' },
+  { value: 'private', label: 'Private', description: 'Only you can open it while you prepare' },
 ];
 
 export function AccountStep({
@@ -81,13 +81,13 @@ export function AccountStep({
       }}
     >
       <StepHeader
-        title="Claim your link"
-        subtitle="This is where your portfolio lives. You can change it later, but the link will change with it."
+        title="Choose your agent’s link"
+        subtitle="Visitors open this address to talk with a voice representative that answers as you, using only the context you provide."
       />
 
       <div style={fieldGroupStyle('1.5rem')}>
         <label style={labelStyle} htmlFor="pv-username">
-          Your portfolio address
+          Agent address
         </label>
 
         <div
@@ -166,10 +166,10 @@ export function AccountStep({
       </div>
 
       <div style={fieldGroupStyle('1.25rem')}>
-        <span style={labelStyle}>Who can see it?</span>
+        <span style={labelStyle}>Who can talk to your agent?</span>
         <div
           role="radiogroup"
-          aria-label="Profile visibility"
+          aria-label="Agent visitor access"
           style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}
         >
           {VISIBILITY_OPTIONS.map((opt) => (
@@ -210,14 +210,14 @@ export function AccountStep({
           <input
             id="pv-access-password"
             className="pv-field"
-            type="text"
+            type="password"
             required
             minLength={6}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             style={inputStyle(password.length > 0 && password.length < 6 ? 'error' : 'default')}
             placeholder="At least 6 characters"
-            autoComplete="off"
+            autoComplete="new-password"
           />
           <p style={{ color: COLORS.textMuted, fontSize: '0.75rem', margin: '0.4rem 0 0' }}>
             Share this with anyone you want to let in.
@@ -226,7 +226,7 @@ export function AccountStep({
       )}
 
       <StepActions
-        continueLabel="Continue"
+        continueLabel="Set agent address"
         disabled={!canContinue}
         busy={busy}
         disabledHint={
