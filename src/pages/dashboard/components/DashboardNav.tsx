@@ -1,10 +1,18 @@
+import { NavLink, useLocation } from 'react-router-dom';
 import { Brand } from '@shared-components/ui';
 import { COLORS, MOTION } from '../styles';
 
-export type DashboardView = 'overview' | 'knowledge' | 'configuration';
+export interface NavSubItem {
+  to: string;
+  label: string;
+  needsAttention?: boolean;
+}
 
 export interface NavItem {
-  id: DashboardView;
+  /** Absolute path of the workspace this item opens. */
+  to: string;
+  /** Sections revealed underneath while this workspace is open. */
+  children?: NavSubItem[];
   label: string;
   description: string;
   icon: 'analytics' | 'knowledge' | 'settings';
@@ -21,15 +29,14 @@ export interface NavAccount {
 
 interface DashboardNavProps {
   items: NavItem[];
-  activeId: DashboardView;
-  onSelect: (id: DashboardView) => void;
   onLogout: () => void;
   account: NavAccount;
 }
 
 /** Persistent workspace navigation. On small screens CSS turns this into a
  * horizontally scrollable tab bar while preserving 44px touch targets. */
-export function DashboardNav({ items, activeId, onSelect, onLogout, account }: DashboardNavProps) {
+export function DashboardNav({ items, onLogout, account }: DashboardNavProps) {
+  const { pathname } = useLocation();
   const initial = (account.name || account.handle || '?').charAt(0).toUpperCase();
 
   return (
@@ -41,41 +48,65 @@ export function DashboardNav({ items, activeId, onSelect, onLogout, account }: D
 
       <nav aria-label="Dashboard sections" className="pv-sidebar-nav">
         {items.map((item) => {
-          const active = item.id === activeId;
+          const open = Boolean(item.children?.length) && pathname.startsWith(item.to);
           return (
-            <button
-              key={item.id}
-              type="button"
-              className="pv-dashboard-nav-item pv-focusable"
-              aria-current={active ? 'page' : undefined}
-              onClick={() => onSelect(item.id)}
-              style={{
-                borderColor: active ? COLORS.border : 'transparent',
-                background: active ? COLORS.surfaceRaised : 'transparent',
-                color: active ? COLORS.textPrimary : COLORS.textSecondary,
-                boxShadow: active ? '0 8px 22px rgba(20,19,26,.055)' : 'none',
-                transition: `background ${MOTION.fast}, color ${MOTION.fast}, border-color ${MOTION.fast}`,
-              }}
-            >
-              <span
-                aria-hidden="true"
-                className="pv-dashboard-nav-icon"
-                style={{
-                  background: active ? COLORS.textPrimary : COLORS.surfaceRaised,
-                  color: active ? COLORS.canvas : COLORS.textMuted,
-                  borderColor: active ? COLORS.textPrimary : COLORS.borderSubtle,
-                }}
+            <div key={item.to} className="pv-sidebar-nav-group">
+              {/* Real links, not buttons: they can be opened in a new tab, and
+                  NavLink owns `aria-current` so active state cannot drift. The
+                  copy is display:none on the icon-only rail (48-64rem), which
+                  is why each link carries an aria-label of its own. */}
+              <NavLink
+                to={item.to}
+                className="pv-dashboard-nav-item pv-focusable"
+                aria-label={`${item.label} — ${item.description}`}
+                title={item.label}
+                style={({ isActive }) => ({
+                  borderColor: isActive ? COLORS.border : 'transparent',
+                  background: isActive ? COLORS.surfaceRaised : 'transparent',
+                  color: isActive ? COLORS.textPrimary : COLORS.textSecondary,
+                  boxShadow: isActive ? '0 8px 22px rgba(20,19,26,.055)' : 'none',
+                  transition: `background ${MOTION.fast}, color ${MOTION.fast}, border-color ${MOTION.fast}`,
+                })}
               >
-                <NavIcon name={item.icon} />
-              </span>
-              <span className="pv-dashboard-nav-copy">
-                <span className="pv-dashboard-nav-label">{item.label}</span>
-                <span className="pv-dashboard-nav-description">{item.description}</span>
-              </span>
-              {item.needsAttention ? (
-                <span className="pv-nav-attention" aria-label="Needs attention" title="Needs attention" />
+                {({ isActive }) => (
+                  <>
+                    <span
+                      aria-hidden="true"
+                      className="pv-dashboard-nav-icon"
+                      style={{
+                        background: isActive ? COLORS.textPrimary : COLORS.surfaceRaised,
+                        color: isActive ? COLORS.canvas : COLORS.textMuted,
+                        borderColor: isActive ? COLORS.textPrimary : COLORS.borderSubtle,
+                      }}
+                    >
+                      <NavIcon name={item.icon} />
+                    </span>
+                    <span className="pv-dashboard-nav-copy">
+                      <span className="pv-dashboard-nav-label">{item.label}</span>
+                      <span className="pv-dashboard-nav-description">{item.description}</span>
+                    </span>
+                    {item.needsAttention ? (
+                      <span className="pv-nav-attention" aria-label="Needs attention" title="Needs attention" />
+                    ) : null}
+                  </>
+                )}
+              </NavLink>
+
+              {open ? (
+                <ul className="pv-sidebar-subnav" aria-label={`${item.label} sections`}>
+                  {item.children!.map((child) => (
+                    <li key={child.to}>
+                      <NavLink to={child.to} className="pv-sidebar-subnav-item pv-focusable">
+                        <span>{child.label}</span>
+                        {child.needsAttention ? (
+                          <span className="pv-subnav-attention" aria-label="Incomplete" title="Incomplete" />
+                        ) : null}
+                      </NavLink>
+                    </li>
+                  ))}
+                </ul>
               ) : null}
-            </button>
+            </div>
           );
         })}
       </nav>
@@ -94,6 +125,7 @@ export function DashboardNav({ items, activeId, onSelect, onLogout, account }: D
           rel="noopener noreferrer"
           className="pv-sidebar-profile pv-focusable"
           title="Open visitor view"
+          aria-label={`Open visitor view for ${account.name || account.handle}`}
         >
           <span className="pv-sidebar-avatar" aria-hidden="true">
             {account.image ? <img src={account.image} alt="" /> : initial}
@@ -104,7 +136,7 @@ export function DashboardNav({ items, activeId, onSelect, onLogout, account }: D
           </span>
           <span aria-hidden="true" className="pv-sidebar-open-icon">↗</span>
         </a>
-        <button type="button" className="pv-sidebar-logout pv-focusable" onClick={onLogout}>
+        <button type="button" className="pv-sidebar-logout pv-focusable" title="Log out" onClick={onLogout}>
           Log out
         </button>
       </div>

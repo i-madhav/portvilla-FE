@@ -18,22 +18,11 @@ export const pageStyle: CSSProperties = {
   minHeight: '100vh',
 };
 
-/** Sidebar + content on wide screens; single column below. */
-export const shellStyle: CSSProperties = {
-  maxWidth: '90rem',
-  margin: '0 auto',
-  display: 'grid',
-  gap: '2rem',
-  padding: '1.25rem 1rem 4rem',
-  alignItems: 'start',
-};
-
-export const containerStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '1.5rem',
-  minWidth: 0,
-};
+/**
+ * Shell and main-column layout now live entirely in `index.css`
+ * (`.pv-dashboard-shell`, `.pv-dashboard-main`). Inline styles must not set
+ * layout properties — they silently outrank the stylesheet.
+ */
 
 export const cardStyle: CSSProperties = {
   background: COLORS.surface,

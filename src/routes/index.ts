@@ -33,6 +33,8 @@ export const ROUTES = {
   VERIFY_EMAIL: '/verify-email',
   ONBOARDING: '/onboarding',
   DASHBOARD: '/dashboard',
+  OVERVIEW: '/dashboard/overview',
+  KNOWLEDGE: '/dashboard/knowledge',
   CONFIGURATION: '/dashboard/configuration',
 } as const;
 
@@ -40,7 +42,7 @@ export const ROUTE_GROUPS = {
   PUBLIC: [ROUTES.HOME, ROUTES.NOT_FOUND],
   AUTH: [ROUTES.LOGIN, ROUTES.SIGNUP, ROUTES.FORGOT_PASSWORD, ROUTES.RESET_PASSWORD],
   DASHBOARD: [ROUTES.ONBOARDING, ROUTES.VERIFY_EMAIL,
-    ROUTES.CONFIGURATION,
+    ROUTES.OVERVIEW, ROUTES.KNOWLEDGE, ROUTES.CONFIGURATION,
   ],
 } as const;
 
