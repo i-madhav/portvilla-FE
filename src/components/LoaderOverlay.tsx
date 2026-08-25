@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { IMAGE_SRCS, FONT }   from '../lib/constants';
-import S                       from '../lib/styles';
+import { IMAGE_SRCS, FONT }   from '../lib/scene/constants';
+import S                       from '../lib/ui/styles';
 
 interface LoaderOverlayProps {
   progress : number;

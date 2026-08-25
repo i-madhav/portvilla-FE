@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ApiError } from '@app/lib/apiClient';
+import { ApiError } from '@app/lib/api';
 import { getPublicProfile, unlockPublicProfile } from '@api-hooks/profile/profileApiFns';
 import type { PublicProfileDto } from '@typings/profileApi';
 

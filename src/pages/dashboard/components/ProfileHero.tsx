@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Button, ButtonAnchor } from '@shared-components/ui';
 import type { ProfileDataResponseDto, ProfileVisibility, UpdateProfilePayload } from '@typings/profileApi';
-import { publicProfileLabel, publicProfileUrl } from '@app/lib/publicProfile';
+import { publicProfileLabel, publicProfileUrl } from '@app/lib/api';
 import { COLORS, RADIUS, SHADOW, FONT, MOTION, inputStyle, selectStyle, noticeStyle } from '../styles';
 // The theme's tone-taking pillStyle, not the flat object `../styles` re-exports
 // under the same name for the legacy sections.
@@ -9,7 +9,7 @@ import { pillStyle } from '@shared-components/theme';
 
 interface ProfileHeroProps {
   profile: ProfileDataResponseDto;
-  onLogout: () => void;
+  onLogout?: () => void;
   save: (payload: UpdateProfilePayload) => Promise<void>;
 }
 
@@ -161,8 +161,7 @@ export function ProfileHero({ profile, onLogout, save }: ProfileHeroProps) {
           </div>
         </div>
 
-        {/* Demoted to a quiet corner control. It is not the job to be done. */}
-        <Button type="button" variant="ghost" size="compact" onClick={onLogout}>Log out</Button>
+        {onLogout ? <Button type="button" variant="ghost" size="compact" onClick={onLogout}>Log out</Button> : null}
       </div>
 
       {editingAccess ? (

@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import type { CapabilityEntryDto, CapabilityProficiency } from '@typings/profileApi';
+import type { CapabilityEntryDto, CapabilityProficiency, EntityType } from '@typings/profileApi';
 import { CapabilityProficiency as Proficiency } from '@typings/profileApi';
-import { labelStyle, inputStyle, selectStyle } from '@shared-components/theme';
+import { labelStyle, inputStyle, selectStyle, textareaStyle } from '@shared-components/theme';
 import { RepeatableList } from '@shared-components/forms/RepeatableList';
 import { EditableSection } from '../components/EditableSection';
 import { EditActions } from '../components/EditActions';
@@ -29,14 +29,19 @@ const miniLabel = { ...labelStyle, fontSize: '0.68rem', marginBottom: '0.25rem' 
 
 export function CapabilitiesSection({ profile, save }: SectionProps) {
   const capabilities = profile.capabilities;
+  const entityType = profile.identity.entityType;
+  const title = entityType === 'individual' ? 'Skills & capabilities' : entityType === 'product' ? 'Product features' : 'Capabilities';
+  const description = entityType === 'individual'
+    ? 'Expertise your agent can speak to with confidence.'
+    : 'Strengths and features your agent can explain to visitors.';
 
   return (
     <EditableSection
-      title="Skills & Capabilities"
-      description="What your agent can vouch for."
+      title={title}
+      description={description}
       view={
         capabilities.length === 0 ? (
-          <EmptyText>No skills yet — add some so your agent can speak to them.</EmptyText>
+          <EmptyText>No {entityType === 'individual' ? 'skills' : 'capabilities'} yet — add some so your agent can speak to them.</EmptyText>
         ) : (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
             {capabilities.map((c, i) => (
@@ -50,17 +55,19 @@ export function CapabilitiesSection({ profile, save }: SectionProps) {
           </div>
         )
       }
-      edit={({ done }) => <CapabilitiesEdit initial={capabilities} save={save} done={done} />}
+      edit={({ done }) => <CapabilitiesEdit initial={capabilities} entityType={entityType} save={save} done={done} />}
     />
   );
 }
 
 function CapabilitiesEdit({
   initial,
+  entityType,
   save,
   done,
 }: {
   initial: CapabilityEntryDto[];
+  entityType: EntityType;
   save: SectionProps['save'];
   done: () => void;
 }) {
@@ -87,8 +94,8 @@ function CapabilitiesEdit({
         items={items}
         onChange={setItems}
         makeEmpty={makeEmpty}
-        addLabel="Add a skill"
-        emptyHint="No skills yet."
+        addLabel={entityType === 'individual' ? 'Add a skill' : entityType === 'product' ? 'Add a feature' : 'Add a capability'}
+        emptyHint={`No ${entityType === 'individual' ? 'skills' : 'capabilities'} yet.`}
         renderItem={(item, update, index) => (
           <>
             <div>
@@ -111,23 +118,35 @@ function CapabilitiesEdit({
                   style={inputStyle()}
                 />
               </div>
-              <div style={{ flex: 1 }}>
-                <label style={miniLabel}>Level</label>
-                <select
-                  aria-label={`Skill ${index + 1} proficiency`}
-                  value={item.proficiency ?? ''}
-                  onChange={(e) =>
-                    update({ proficiency: (e.target.value || null) as CapabilityProficiency | null })
-                  }
-                  style={selectStyle()}
-                >
-                  {PROFICIENCY_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {entityType === 'individual' ? (
+                <div style={{ flex: 1 }}>
+                  <label style={miniLabel}>Level</label>
+                  <select
+                    aria-label={`Skill ${index + 1} proficiency`}
+                    value={item.proficiency ?? ''}
+                    onChange={(e) =>
+                      update({ proficiency: (e.target.value || null) as CapabilityProficiency | null })
+                    }
+                    style={selectStyle()}
+                  >
+                    {PROFICIENCY_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
+            </div>
+            <div>
+              <label style={miniLabel}>Description</label>
+              <textarea
+                aria-label={`${entityType === 'product' ? 'Feature' : 'Capability'} ${index + 1} description`}
+                value={item.description ?? ''}
+                onChange={(e) => update({ description: e.target.value || null })}
+                style={textareaStyle()}
+                rows={2}
+              />
             </div>
           </>
         )}

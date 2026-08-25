@@ -2,12 +2,12 @@ import { useRef }         from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE          from 'three';
 import type { OrbHandle } from '../../hooks/useOrbState';
-import { ORB_CENTER_Z, ORB_END_Y, ORB_START_Y, type OrbEntranceState } from '../../lib/constants';
+import { ORB_CENTER_Z, ORB_END_Y, ORB_START_Y, type OrbEntranceState } from '../../lib/scene/constants';
 import {
   ORB_MAIN_VERT,  ORB_MAIN_FRAG,
   ORB_INNER_VERT, ORB_INNER_FRAG,
   ORB_HALO_VERT,  ORB_HALO_FRAG,
-} from '../../lib/orbShaders';
+} from '../../lib/scene/orbShaders';
 
 interface OrbCoreProps {
   visible         : boolean;

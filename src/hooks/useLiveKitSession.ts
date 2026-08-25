@@ -7,7 +7,7 @@ import {
   type RemoteParticipant,
   type RemoteTrackPublication,
 } from 'livekit-client';
-import { createGuestSession } from '../lib/sessionApi';
+import { createGuestSession } from '@app/lib/api';
 import type { OrbHandle } from './useOrbState';
 
 const LIVEKIT_URL = import.meta.env.VITE_LIVEKIT_URL ?? 'wss://portvilla-crjwmpba.livekit.cloud';

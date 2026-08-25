@@ -1,4 +1,4 @@
-import S from '../lib/styles';
+import S from '../lib/ui/styles';
 
 interface EndRevealProps {
   visible: boolean;

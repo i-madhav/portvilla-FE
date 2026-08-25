@@ -2,8 +2,8 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree }         from '@react-three/fiber';
 import { useTexture }                  from '@react-three/drei';
 import * as THREE                      from 'three';
-import { VERT, FRAG }                  from '../../lib/shaders';
-import { CAM_START, PLANE_SCALE }      from '../../lib/constants';
+import { VERT, FRAG }                  from '../../lib/scene/shaders';
+import { CAM_START, PLANE_SCALE }      from '../../lib/scene/constants';
 
 interface LayerMeshProps {
   textureSrc  : string;

@@ -20,7 +20,7 @@ import {
   stepIndex,
   hasOnboardingInProgress,
   clearDraft,
-} from './useOnboardingFlow';
+} from './hooks/useOnboardingFlow';
 
 const EMPTY_SUGGESTIONS: ResumeSuggestionsDto = {
   identity: null,
@@ -97,7 +97,8 @@ export function OnboardingPage() {
   }
 
   const index = stepIndex(flow.step, flow.steps);
-  const { busy, data } = { busy: flow.isCommitting, data: flow.data };
+  const busy = flow.isCommitting;
+  const data = flow.data;
 
   return (
     <div style={pageStyle}>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { TimelineEntryDto, TimelineCategory } from '@typings/profileApi';
+import type { EntityType, TimelineEntryDto, TimelineCategory } from '@typings/profileApi';
 import { TimelineCategory as Category } from '@typings/profileApi';
 import { labelStyle, inputStyle, textareaStyle, selectStyle } from '@shared-components/theme';
 import { RepeatableList } from '@shared-components/forms/RepeatableList';
@@ -36,11 +36,13 @@ const range = (t: TimelineEntryDto) => `${t.date}${t.endDate ? ` – ${t.endDate
 
 export function TimelineSection({ profile, save }: SectionProps) {
   const timeline = profile.timeline;
+  const entityType = profile.identity.entityType;
+  const individual = entityType === 'individual';
 
   return (
     <EditableSection
-      title="Experience & Education"
-      description="Roles, schooling, and milestones."
+      title={individual ? 'Experience & education' : entityType === 'product' ? 'Releases & milestones' : 'Organization milestones'}
+      description={individual ? 'Roles, education, certifications, and career highlights.' : 'Dated launches, awards, certifications, and moments that shaped the story.'}
       view={
         timeline.length === 0 ? (
           <EmptyText>No timeline entries yet.</EmptyText>
@@ -62,22 +64,35 @@ export function TimelineSection({ profile, save }: SectionProps) {
           </div>
         )
       }
-      edit={({ done }) => <TimelineEdit initial={timeline} save={save} done={done} />}
+      edit={({ done }) => <TimelineEdit initial={timeline} entityType={entityType} save={save} done={done} />}
     />
   );
 }
 
 function TimelineEdit({
   initial,
+  entityType,
   save,
   done,
 }: {
   initial: TimelineEntryDto[];
+  entityType: EntityType;
   save: SectionProps['save'];
   done: () => void;
 }) {
   const [items, setItems] = useState<TimelineEntryDto[]>(initial);
   const [saving, setSaving] = useState(false);
+  const individual = entityType === 'individual';
+  const categoryOptions = individual
+    ? CATEGORY_OPTIONS
+    : CATEGORY_OPTIONS.filter((option) =>
+        entityType === 'product'
+          ? option.value === Category.ProductLaunch
+            || option.value === Category.Milestone
+            || option.value === Category.Award
+            || option.value === Category.Other
+          : option.value !== Category.Career && option.value !== Category.Education,
+      );
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,8 +113,8 @@ function TimelineEdit({
       <RepeatableList
         items={items}
         onChange={setItems}
-        makeEmpty={makeEmpty}
-        addLabel="Add an entry"
+        makeEmpty={() => ({ ...makeEmpty(), category: individual ? Category.Career : entityType === 'product' ? Category.ProductLaunch : Category.Milestone })}
+        addLabel={individual ? 'Add experience' : 'Add a milestone'}
         emptyHint="No entries yet."
         renderItem={(item, update, index) => (
           <>
@@ -112,7 +127,7 @@ function TimelineEdit({
                   onChange={(e) => update({ category: e.target.value as TimelineCategory })}
                   style={selectStyle()}
                 >
-                  {CATEGORY_OPTIONS.map((opt) => (
+                  {categoryOptions.map((opt) => (
                     <option key={opt.value} value={opt.value}>
                       {opt.label}
                     </option>

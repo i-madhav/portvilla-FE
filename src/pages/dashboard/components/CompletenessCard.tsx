@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@shared-components/ui';
-import type { Completeness } from '../useProfileCompleteness';
+import type { Completeness } from '../hooks/useProfileCompleteness';
 import { COLORS, RADIUS, MOTION, FONT } from '../styles';
 
 interface CompletenessCardProps {

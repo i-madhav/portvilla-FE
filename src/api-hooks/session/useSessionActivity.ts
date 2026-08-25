@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { authClient } from '@app/lib/apiClient';
+import { authClient } from '@app/lib/api';
 import type { SessionActivityDto } from '@typings/profileApi';
 
 /**

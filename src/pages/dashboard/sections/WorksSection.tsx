@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import type { WorkEntryDto, WorkType } from '@typings/profileApi';
+import type { EntityType, WorkEntryDto, WorkType } from '@typings/profileApi';
 import { WorkType as Work } from '@typings/profileApi';
 import { labelStyle, inputStyle, textareaStyle, selectStyle } from '@shared-components/theme';
 import { RepeatableList } from '@shared-components/forms/RepeatableList';
-import { csvToArray, arrayToCsv } from '@app/lib/formHelpers';
+import { csvToArray, arrayToCsv } from '@app/lib/ui/formHelpers';
 import { EditableSection } from '../components/EditableSection';
 import { EditActions } from '../components/EditActions';
 import { EmptyText, Chips } from '../components/display';
@@ -41,14 +41,16 @@ const miniLabel = { ...labelStyle, fontSize: '0.68rem', marginBottom: '0.25rem' 
 
 export function WorksSection({ profile, save }: SectionProps) {
   const works = profile.works;
+  const entityType = profile.identity.entityType;
+  const title = entityType === 'company' ? 'Products & case studies' : entityType === 'product' ? 'Stories & use cases' : entityType === 'organization' ? 'Work & initiatives' : 'Work & projects';
 
   return (
     <EditableSection
-      title="Work & Projects"
-      description="What you've built. Your agent can walk visitors through these."
+      title={title}
+      description="Concrete examples your agent can use to support the story."
       view={
         works.length === 0 ? (
-          <EmptyText>No projects yet.</EmptyText>
+          <EmptyText>No work added yet.</EmptyText>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
             {works.map((w, i) => (
@@ -75,22 +77,37 @@ export function WorksSection({ profile, save }: SectionProps) {
           </div>
         )
       }
-      edit={({ done }) => <WorksEdit initial={works} save={save} done={done} />}
+      edit={({ done }) => <WorksEdit initial={works} entityType={entityType} save={save} done={done} />}
     />
   );
 }
 
 function WorksEdit({
   initial,
+  entityType,
   save,
   done,
 }: {
   initial: WorkEntryDto[];
+  entityType: EntityType;
   save: SectionProps['save'];
   done: () => void;
 }) {
   const [items, setItems] = useState<WorkEntryDto[]>(initial);
   const [saving, setSaving] = useState(false);
+  const typeOptions = entityType === 'individual'
+    ? TYPE_OPTIONS
+    : TYPE_OPTIONS.filter((option) => {
+        if (entityType === 'product') {
+          return option.value === Work.Product
+            || option.value === Work.CaseStudy
+            || option.value === Work.Research
+            || option.value === Work.Other;
+        }
+        if (entityType === 'company') return option.value !== Work.Artwork;
+        return option.value !== Work.Product;
+      });
+  const defaultType = entityType === 'company' || entityType === 'product' ? Work.Product : Work.Project;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,16 +128,16 @@ function WorksEdit({
       <RepeatableList
         items={items}
         onChange={setItems}
-        makeEmpty={makeEmpty}
-        addLabel="Add a project"
-        emptyHint="No projects yet."
+        makeEmpty={() => ({ ...makeEmpty(), type: defaultType })}
+        addLabel={entityType === 'company' ? 'Add product or case study' : entityType === 'product' ? 'Add a use case' : 'Add work'}
+        emptyHint="No work added yet."
         renderItem={(item, update, index) => (
           <>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <div style={{ flex: 1 }}>
                 <label style={miniLabel}>Type</label>
                 <select aria-label={`Work ${index + 1} type`} value={item.type} onChange={(e) => update({ type: e.target.value as WorkType })} style={selectStyle()}>
-                  {TYPE_OPTIONS.map((opt) => (
+                  {typeOptions.map((opt) => (
                     <option key={opt.value} value={opt.value}>
                       {opt.label}
                     </option>

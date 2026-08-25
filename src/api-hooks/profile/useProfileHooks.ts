@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 import { useToast } from '@app/providers/toast';
+import { isCanceled } from '@app/lib/api';
 import { useAppDispatch } from '@stores/store';
 import {
   setProfileData,
@@ -123,6 +124,10 @@ function useMutationCallbacks() {
   const onMutationError = useCallback(
     (error: Error, title: string) => {
       dispatch(setMutating(false));
+      // A canceled request means the caller moved on — the component unmounted
+      // or a newer request superseded this one. Nothing failed, so there is
+      // nothing to tell the user about.
+      if (isCanceled(error)) return;
       dispatch(setMutationError(error.message));
       showToast({
         type: 'error',

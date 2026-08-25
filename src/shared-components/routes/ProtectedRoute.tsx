@@ -2,7 +2,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useEffect, type ReactNode } from 'react';
 import { useAppDispatch, useAppSelector } from '@stores/store';
 import { clearTokensAndState } from '@stores/authSlice';
-import { isTokenExpired } from '@app/lib/jwt';
+import { isTokenExpired } from '@app/lib/api';
 
 interface ProtectedRouteProps {
   children?: ReactNode;

@@ -4,7 +4,7 @@ import type { EntityType } from '@typings/profileApi';
 import { EntityType as EntityTypeEnum } from '@typings/profileApi';
 import { StepActions } from '../components/StepActions';
 import { StepHeader } from '../components/StepHeader';
-import type { IdentityStepData } from '../useOnboardingFlow';
+import type { IdentityStepData } from '../hooks/useOnboardingFlow';
 import {
   COLORS,
   inputStyle,

@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { FONT } from './constants';
+import { FONT } from '../scene/constants';
 
 const S: Record<string, CSSProperties> = {
   fullFixed: { position: 'fixed', inset: 0 },

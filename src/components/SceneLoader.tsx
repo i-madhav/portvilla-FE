@@ -10,8 +10,8 @@ import {
   ORB_START_Y,
   orbEntranceLinearT,
   type OrbEntranceState,
-} from '../lib/constants';
-import { jumpToPageTop }                from '../lib/utils';
+} from '../lib/scene/constants';
+import { jumpToPageTop }                from '../lib/ui/utils';
 import { useImagePreloader }            from '../hooks/useImagePreloader';
 import { useMouseParallax }             from '../hooks/useMouseParallax';
 import { useOrbState }                  from '../hooks/useOrbState';

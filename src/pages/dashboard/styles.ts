@@ -20,18 +20,18 @@ export const pageStyle: CSSProperties = {
 
 /** Sidebar + content on wide screens; single column below. */
 export const shellStyle: CSSProperties = {
-  maxWidth: '73.75rem',
+  maxWidth: '90rem',
   margin: '0 auto',
   display: 'grid',
-  gap: '1.5rem',
-  padding: '1.5rem 1rem 4rem',
+  gap: '2rem',
+  padding: '1.25rem 1rem 4rem',
   alignItems: 'start',
 };
 
 export const containerStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
-  gap: '1rem',
+  gap: '1.5rem',
   minWidth: 0,
 };
 

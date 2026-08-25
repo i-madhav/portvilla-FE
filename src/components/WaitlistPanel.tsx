@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { submitWaitlist } from '../lib/waitlistApi';
-import { FONT } from '../lib/constants';
+import { submitWaitlist } from '@app/lib/api';
+import { FONT } from '../lib/scene/constants';
 
 interface WaitlistPanelProps {
   visible   : boolean;

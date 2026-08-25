@@ -36,6 +36,17 @@ export function useProfileCompleteness(profile: ProfileDataResponseDto | null): 
     if (!profile) return { percent: 0, items: [], done: 0, total: 0, next: null };
 
     const id = profile.identity;
+    const isIndividual = id.entityType === 'individual';
+    const capabilityLabel = id.entityType === 'product'
+      ? 'Add at least 3 features'
+      : isIndividual
+        ? 'List at least 3 skills'
+        : 'Add at least 3 capabilities';
+    const workLabel = id.entityType === 'company'
+      ? 'Add a product or case study'
+      : id.entityType === 'product'
+        ? 'Add a product story'
+        : 'Add a project or work sample';
 
     const items: CompletenessItem[] = [
       {
@@ -64,23 +75,25 @@ export function useProfileCompleteness(profile: ProfileDataResponseDto | null): 
       },
       {
         id: 'skills',
-        label: 'List at least 3 skills',
-        rationale: 'These are what your agent can actually speak to.',
+        label: capabilityLabel,
+        rationale: 'These are the concrete strengths your agent can speak to.',
         done: (profile.capabilities?.length ?? 0) >= 3,
         target: 'capabilities',
         weight: 80,
       },
       {
         id: 'timeline',
-        label: 'Add your experience',
-        rationale: 'Dates, roles and organizations let the agent answer career questions with specifics.',
+        label: isIndividual ? 'Add your experience' : 'Add a milestone',
+        rationale: isIndividual
+          ? 'Dates, roles and organizations let the agent answer career questions with specifics.'
+          : 'A dated milestone gives the agent a credible story about progress over time.',
         done: (profile.timeline?.length ?? 0) >= 1,
         target: 'timeline',
         weight: 65,
       },
       {
         id: 'works',
-        label: 'Add a project',
+        label: workLabel,
         rationale: 'One concrete example lets the agent support claims with evidence.',
         done: (profile.works?.length ?? 0) >= 1,
         target: 'works',
