@@ -5,6 +5,7 @@ import {
   Signup,
   ForgotPassword,
   ResetPassword,
+  VerifyEmailPage,
   ErrorTestPage,
 } from '@pages/auth';
 
@@ -38,6 +39,14 @@ export const authRoutes: RouteObject[] = [
     element: (
       <AuthRoute>
         <ResetPassword />
+      </AuthRoute>
+    ),
+  },
+  {
+    path: '/verify-email',
+    element: (
+      <AuthRoute>
+        <VerifyEmailPage />
       </AuthRoute>
     ),
   },

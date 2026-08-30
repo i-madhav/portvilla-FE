@@ -1,5 +1,5 @@
-import { DEPTHS, IMAGE_SRCS, LAYER_Y, LAYER_Z, layerYToSceneryTranslatePx } from '../lib/constants';
-import S                      from '../lib/styles';
+import { DEPTHS, IMAGE_SRCS, LAYER_Y, LAYER_Z, layerYToSceneryTranslatePx } from '../lib/scene/constants';
+import S                      from '../lib/ui/styles';
 
 interface SceneryOverlayProps {
   opacity        : number;

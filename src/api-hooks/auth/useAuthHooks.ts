@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { useToast } from '@app/providers/ToastContext';
+import { useToast } from '@app/providers/toast';
 import { useAppDispatch } from '@stores/store';
 import { setTokensAndPersist, clearTokensAndState } from '@stores/authSlice';
 import type {
@@ -23,7 +23,6 @@ import {
   resendOtp as resendOtpApi,
   requestLoginOtp as requestLoginOtpApi,
   loginWithOtp as loginWithOtpApi,
-  refreshTokens as refreshTokensApi,
 } from './authApiFns';
 
 // ─── Query keys ──────────────────────────────────────────────────────────────

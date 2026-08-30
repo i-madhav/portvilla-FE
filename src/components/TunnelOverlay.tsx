@@ -1,7 +1,7 @@
 import { Suspense }         from 'react';
 import { Canvas }           from '@react-three/fiber';
-import { CAM_FOV, CAM_START, type OrbEntranceState } from '../lib/constants';
-import S                    from '../lib/styles';
+import { CAM_FOV, CAM_START, type OrbEntranceState } from '../lib/scene/constants';
+import S                    from '../lib/ui/styles';
 import type { OrbHandle }   from '../hooks/useOrbState';
 import TunnelScene          from './tunnel/TunnelScene';
 import TunnelEffects        from './tunnel/TunnelEffects';

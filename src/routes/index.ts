@@ -3,15 +3,24 @@ import { useNavigate, useLocation } from 'react-router-dom';
 
 import { authRoutes } from './auth.routes';
 import { publicRoutes } from './publicRoutes';
+import { onboardingRoutes } from './onboarding.routes';
+import { dashboardRoutes } from './dashboard.routes';
+import { publicProfileRoutes } from './publicProfile.routes';
 
-// Combine route modules — more will be added as features grow
+// Combine route modules — more will be added as features grow.
+// publicProfileRoutes (/:username) stays last: React Router ranks static paths
+// above the dynamic segment, but keeping it last makes the "match everything
+// else as a username" intent explicit.
 export const routes: RouteObject[] = [
   ...publicRoutes,
   ...authRoutes,
+  ...onboardingRoutes,
+  ...dashboardRoutes,
+  ...publicProfileRoutes,
 ];
 
 // Export individual route modules for testing or specific use cases
-export { authRoutes, publicRoutes };
+export { authRoutes, publicRoutes, onboardingRoutes, dashboardRoutes, publicProfileRoutes };
 
 // Route configuration constants
 export const ROUTES = {
@@ -22,40 +31,18 @@ export const ROUTES = {
   FORGOT_PASSWORD: '/forgot-password',
   RESET_PASSWORD: '/reset-password',
   VERIFY_EMAIL: '/verify-email',
+  ONBOARDING: '/onboarding',
   DASHBOARD: '/dashboard',
-  CONTRACTS_OVERVIEW: '/dashboard/contracts/overview',
-  CONTRACTS_ALL: '/dashboard/contracts/all',
-  CONTRACTS_UPLOAD: '/dashboard/contracts/upload',
-  INVOICES_OVERVIEW: '/dashboard/invoices/overview',
-  INVOICES_ALL: '/dashboard/invoices/all',
-  INVOICES_UPLOAD: '/dashboard/invoices/upload',
-  ANALYTICS_CONTRACTS: '/dashboard/analytics/contracts',
-  ANALYTICS_INVOICES: '/dashboard/analytics/invoices',
-  ANALYTICS_SAVINGS: '/dashboard/analytics/savings',
-  VENDORS_OVERVIEW: '/dashboard/vendors/overview',
-  VENDORS_ALL: '/dashboard/vendors/all',
-  FLEET: '/dashboard/fleet',
+  OVERVIEW: '/dashboard/overview',
+  KNOWLEDGE: '/dashboard/knowledge',
   CONFIGURATION: '/dashboard/configuration',
 } as const;
 
 export const ROUTE_GROUPS = {
   PUBLIC: [ROUTES.HOME, ROUTES.NOT_FOUND],
   AUTH: [ROUTES.LOGIN, ROUTES.SIGNUP, ROUTES.FORGOT_PASSWORD, ROUTES.RESET_PASSWORD],
-  DASHBOARD: [
-    ROUTES.DASHBOARD,
-    ROUTES.CONTRACTS_OVERVIEW,
-    ROUTES.CONTRACTS_ALL,
-    ROUTES.CONTRACTS_UPLOAD,
-    ROUTES.INVOICES_OVERVIEW,
-    ROUTES.INVOICES_ALL,
-    ROUTES.INVOICES_UPLOAD,
-    ROUTES.ANALYTICS_CONTRACTS,
-    ROUTES.ANALYTICS_INVOICES,
-    ROUTES.ANALYTICS_SAVINGS,
-    ROUTES.VENDORS_OVERVIEW,
-    ROUTES.VENDORS_ALL,
-    ROUTES.FLEET,
-    ROUTES.CONFIGURATION,
+  DASHBOARD: [ROUTES.ONBOARDING, ROUTES.VERIFY_EMAIL,
+    ROUTES.OVERVIEW, ROUTES.KNOWLEDGE, ROUTES.CONFIGURATION,
   ],
 } as const;
 
@@ -80,25 +67,21 @@ export function useNavigation() {
     navigate(ROUTES.HOME);
   };
 
-  const goToDashboard = () => {
-    navigate(ROUTES.CONTRACTS_OVERVIEW);
-  };
 
   const goToLogin = (redirectTo?: string) => {
     navigate(ROUTES.LOGIN, {
-      state: { from: { pathname: redirectTo || ROUTES.CONTRACTS_OVERVIEW } },
+      state: { from: { pathname: redirectTo || ROUTES.ONBOARDING } },
     });
   };
 
   const goToSignup = (redirectTo?: string) => {
     navigate(ROUTES.SIGNUP, {
-      state: { from: { pathname: redirectTo || ROUTES.CONTRACTS_OVERVIEW } },
+      state: { from: { pathname: redirectTo || ROUTES.ONBOARDING } },
     });
   };
 
   const isCurrentRoute = (path: string) => location.pathname === path;
 
-  const isDashboardRoute = () => location.pathname.startsWith(ROUTES.DASHBOARD);
 
   const isAuthRoute = () =>
     location.pathname === ROUTES.LOGIN
@@ -110,11 +93,9 @@ export function useNavigation() {
     goTo,
     goBack,
     goHome,
-    goToDashboard,
     goToLogin,
     goToSignup,
     isCurrentRoute,
-    isDashboardRoute,
     isAuthRoute,
     currentPath: location.pathname,
     currentState: location.state,
@@ -123,9 +104,6 @@ export function useNavigation() {
 
 // ─── Utility helpers ─────────────────────────────────────────────────────────
 
-export function requiresAuth(path: string): boolean {
-  return path.startsWith(ROUTES.DASHBOARD);
-}
 
 export function isPublicRoute(path: string): boolean {
   return path === ROUTES.HOME || path === ROUTES.NOT_FOUND;

@@ -1,6 +1,6 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE              from 'three';
-import { CAM_START, CAM_END } from '../../lib/constants';
+import { CAM_START, CAM_END } from '../../lib/scene/constants';
 
 interface CameraRigProps {
   scrollProgressRef: React.MutableRefObject<number>;

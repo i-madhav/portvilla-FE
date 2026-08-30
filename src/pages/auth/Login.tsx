@@ -1,16 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@stores/store';
-import { useLogin, useRequestLoginOtp, useLoginWithOtp } from '@api-hooks/auth/useAuthHooks';
+import { useLogin, useLoginWithOtp, useRequestLoginOtp } from '@api-hooks/auth/useAuthHooks';
 import { ROUTES } from '@routes/index';
+import { AuthShell, Button, FormNotice, InputField } from '@shared-components/ui';
 
 type Tab = 'password' | 'otp';
 type OtpStep = 'request' | 'verify';
 
 export function Login() {
   const navigate = useNavigate();
-  const { accessToken } = useAppSelector((s) => s.auth);
-
+  const { accessToken } = useAppSelector((state) => state.auth);
   const loginMutation = useLogin();
   const requestOtpMutation = useRequestLoginOtp();
   const loginWithOtpMutation = useLoginWithOtp();
@@ -21,9 +21,8 @@ export function Login() {
   const [otp, setOtp] = useState('');
   const [otpStep, setOtpStep] = useState<OtpStep>('request');
 
-  // Redirect if already logged in
   useEffect(() => {
-    if (accessToken) navigate(ROUTES.CONTRACTS_OVERVIEW, { replace: true });
+    if (accessToken) navigate(ROUTES.ONBOARDING, { replace: true });
   }, [accessToken, navigate]);
 
   useEffect(() => {
@@ -31,26 +30,22 @@ export function Login() {
     setOtp('');
   }, [tab]);
 
-  async function handlePasswordLogin(e: React.FormEvent) {
-    e.preventDefault();
+  async function handlePasswordLogin(event: React.FormEvent) {
+    event.preventDefault();
     const result = await loginMutation.mutateAsync({ email, password });
-    if (result.accessToken) {
-      navigate(ROUTES.CONTRACTS_OVERVIEW, { replace: true });
-    }
+    if (result.accessToken) navigate(ROUTES.ONBOARDING, { replace: true });
   }
 
-  async function handleRequestOtp(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleRequestOtp(event: React.FormEvent) {
+    event.preventDefault();
     await requestOtpMutation.mutateAsync(email);
     setOtpStep('verify');
   }
 
-  async function handleOtpLogin(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleOtpLogin(event: React.FormEvent) {
+    event.preventDefault();
     const result = await loginWithOtpMutation.mutateAsync({ email, otp });
-    if (result.accessToken) {
-      navigate(ROUTES.CONTRACTS_OVERVIEW, { replace: true });
-    }
+    if (result.accessToken) navigate(ROUTES.ONBOARDING, { replace: true });
   }
 
   const isLoading = loginMutation.isPending || requestOtpMutation.isPending || loginWithOtpMutation.isPending;
@@ -59,182 +54,45 @@ export function Login() {
     || loginWithOtpMutation.error?.message
     || null;
 
-  const tabStyle = (active: boolean) => ({
-    color: active ? '#9CB080' : '#618764',
-    borderBottom: active ? '2px solid #9CB080' : '2px solid transparent',
-    background: 'transparent',
-    padding: '0.5rem 1rem',
-    fontSize: '0.875rem',
-    fontWeight: active ? 600 : 400,
-    cursor: 'pointer' as const,
-    transition: 'color 0.15s',
-  });
-
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#273338' }}>
-      <div className="w-full max-w-md px-8 py-10 rounded-2xl" style={{ background: '#2B5748' }}>
-        <h1 className="text-2xl font-semibold mb-1" style={{ color: '#9CB080' }}>
-          Welcome back
-        </h1>
-        <p className="text-sm mb-6" style={{ color: '#618764' }}>
-          Sign in to your Portvilla account.
-        </p>
-
-        {/* Tabs */}
-        <div className="flex mb-6" style={{ borderBottom: '1px solid #618764' }}>
-          <button style={tabStyle(tab === 'password')} onClick={() => setTab('password')}>
-            Password
-          </button>
-          <button style={tabStyle(tab === 'otp')} onClick={() => setTab('otp')}>
-            Email code
-          </button>
-        </div>
-
-        {/* Password tab */}
-        {tab === 'password' && (
-          <form onSubmit={handlePasswordLogin} className="space-y-5">
-            <div>
-              <label className="block text-xs font-medium mb-1" style={{ color: '#9CB080' }}>
-                Email
-              </label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg text-sm outline-none"
-                style={{ background: '#273338', color: '#9CB080', border: '1px solid #618764' }}
-                placeholder="you@example.com"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1" style={{ color: '#9CB080' }}>
-                Password
-              </label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg text-sm outline-none"
-                style={{ background: '#273338', color: '#9CB080', border: '1px solid #618764' }}
-                placeholder="Your password"
-              />
-            </div>
-
-            {error && (
-              <p className="text-xs px-3 py-2 rounded-lg" style={{ background: '#273338', color: '#ff7b6b' }}>
-                {error}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-2.5 rounded-lg text-sm font-medium transition-opacity disabled:opacity-60"
-              style={{ background: '#618764', color: '#273338' }}
-            >
-              {isLoading ? 'Signing in…' : 'Sign in'}
-            </button>
-
-            <div className="text-center mt-2">
-              <Link to={ROUTES.FORGOT_PASSWORD} className="text-xs underline" style={{ color: '#618764' }}>
-                Forgot password?
-              </Link>
-            </div>
-          </form>
-        )}
-
-        {/* OTP tab */}
-        {tab === 'otp' && otpStep === 'request' && (
-          <form onSubmit={handleRequestOtp} className="space-y-5">
-            <div>
-              <label className="block text-xs font-medium mb-1" style={{ color: '#9CB080' }}>
-                Email
-              </label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg text-sm outline-none"
-                style={{ background: '#273338', color: '#9CB080', border: '1px solid #618764' }}
-                placeholder="you@example.com"
-              />
-            </div>
-
-            {error && (
-              <p className="text-xs px-3 py-2 rounded-lg" style={{ background: '#273338', color: '#ff7b6b' }}>
-                {error}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-2.5 rounded-lg text-sm font-medium transition-opacity disabled:opacity-60"
-              style={{ background: '#618764', color: '#273338' }}
-            >
-              {isLoading ? 'Sending code…' : 'Send login code'}
-            </button>
-          </form>
-        )}
-
-        {tab === 'otp' && otpStep === 'verify' && (
-          <form onSubmit={handleOtpLogin} className="space-y-5">
-            <p className="text-xs" style={{ color: '#618764' }}>
-              Code sent to <span style={{ color: '#9CB080' }}>{email}</span>
-            </p>
-            <div>
-              <label className="block text-xs font-medium mb-1" style={{ color: '#9CB080' }}>
-                Login code
-              </label>
-              <input
-                type="text"
-                required
-                maxLength={6}
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                className="w-full px-4 py-2.5 rounded-lg text-sm outline-none tracking-widest"
-                style={{ background: '#273338', color: '#9CB080', border: '1px solid #618764' }}
-                placeholder="123456"
-                autoFocus
-              />
-            </div>
-
-            {error && (
-              <p className="text-xs px-3 py-2 rounded-lg" style={{ background: '#273338', color: '#ff7b6b' }}>
-                {error}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-2.5 rounded-lg text-sm font-medium transition-opacity disabled:opacity-60"
-              style={{ background: '#618764', color: '#273338' }}
-            >
-              {isLoading ? 'Signing in…' : 'Sign in'}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setOtpStep('request')}
-              className="w-full py-2 text-xs"
-              style={{ color: '#618764', background: 'transparent' }}
-            >
-              ← Use a different email
-            </button>
-          </form>
-        )}
-
-        <p className="text-xs mt-6 text-center" style={{ color: '#618764' }}>
-          Don't have an account?{' '}
-          <Link to={ROUTES.SIGNUP} className="underline" style={{ color: '#9CB080' }}>
-            Sign up
-          </Link>
-        </p>
+    <AuthShell
+      eyebrow="01 — account access"
+      title="Welcome back."
+      description="Open the profile and agent configuration attached to your account."
+      footer={<>No account yet? <Link className="font-semibold text-violet-deep" to={ROUTES.SIGNUP}>Create one</Link></>}
+    >
+      <div className="grid grid-cols-2 gap-2 rounded-pill border border-ink-8 bg-paper-raised/60 p-1">
+        <Button size="compact" variant={tab === 'password' ? 'primary' : 'ghost'} aria-pressed={tab === 'password'} onClick={() => setTab('password')}>
+          Password
+        </Button>
+        <Button size="compact" variant={tab === 'otp' ? 'primary' : 'ghost'} aria-pressed={tab === 'otp'} onClick={() => setTab('otp')}>
+          Email code
+        </Button>
       </div>
-    </div>
+
+      {tab === 'password' ? (
+        <form onSubmit={handlePasswordLogin} className="grid gap-5">
+          <InputField label="Email" type="email" required autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" />
+          <InputField label="Password" type="password" required autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Your password" />
+          {error ? <FormNotice>error / {error}</FormNotice> : null}
+          <Button type="submit" fullWidth disabled={isLoading}>{isLoading ? 'Signing in…' : 'Sign in'}</Button>
+          <Link className="pv-focusable justify-self-center rounded-pill font-mono text-micro text-violet-deep" to={ROUTES.FORGOT_PASSWORD}>Forgot password?</Link>
+        </form>
+      ) : otpStep === 'request' ? (
+        <form onSubmit={handleRequestOtp} className="grid gap-5">
+          <InputField label="Email" type="email" required autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" />
+          {error ? <FormNotice>error / {error}</FormNotice> : null}
+          <Button type="submit" fullWidth disabled={isLoading}>{isLoading ? 'Sending code…' : 'Send login code'}</Button>
+        </form>
+      ) : (
+        <form onSubmit={handleOtpLogin} className="grid gap-5">
+          <p className="font-mono text-micro text-ink-45">delivery / {email}</p>
+          <InputField label="Login code" type="text" required inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, ''))} placeholder="123456" autoFocus />
+          {error ? <FormNotice>error / {error}</FormNotice> : null}
+          <Button type="submit" fullWidth disabled={isLoading}>{isLoading ? 'Signing in…' : 'Sign in'}</Button>
+          <Button variant="ghost" fullWidth onClick={() => setOtpStep('request')}>Use a different email</Button>
+        </form>
+      )}
+    </AuthShell>
   );
 }

@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { apiClient } from '../lib/apiClient';
+import { apiClient, getAccessToken, getRefreshToken, setTokens, clearTokens } from '@app/lib/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -42,21 +42,15 @@ export interface AuthState {
 
 // ─── Persistence helpers ───────────────────────────────────────────────────────
 
+// Persistence lives in the API layer's token store: it is the same storage the
+// HTTP client reads on every request, so the two cannot drift, and it is the
+// only copy that is guarded against localStorage throwing in private mode.
+
 function loadTokens(): Pick<AuthState, 'accessToken' | 'refreshToken'> {
   return {
-    accessToken: localStorage.getItem('accessToken'),
-    refreshToken: localStorage.getItem('refreshToken'),
+    accessToken: getAccessToken(),
+    refreshToken: getRefreshToken(),
   };
-}
-
-function saveTokens(access: string, refresh: string) {
-  localStorage.setItem('accessToken', access);
-  localStorage.setItem('refreshToken', refresh);
-}
-
-function clearTokens() {
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken');
 }
 
 // ─── Thunks ───────────────────────────────────────────────────────────────────
@@ -131,7 +125,9 @@ export const refreshTokens = createAsyncThunk<TokenResponse, void>(
   'auth/refreshTokens',
   async (_, { getState, rejectWithValue }) => {
     const state = getState() as { auth: AuthState };
-    const token = state.auth.refreshToken;
+    // Falls back to storage so a token another tab just rotated is used even
+    // though this tab's slice has not caught up yet.
+    const token = state.auth.refreshToken ?? getRefreshToken();
     if (!token) return rejectWithValue('No refresh token');
     try {
       return await apiClient.post<TokenResponse>('/auth/refresh', { refreshToken: token });
@@ -175,7 +171,7 @@ const authSlice = createSlice({
     setTokensAndPersist(state, action: PayloadAction<TokenResponse>) {
       state.accessToken = action.payload.accessToken;
       state.refreshToken = action.payload.refreshToken;
-      saveTokens(action.payload.accessToken, action.payload.refreshToken);
+      setTokens(action.payload.accessToken, action.payload.refreshToken);
     },
     /** Clear tokens from state and localStorage (used by react-query hooks) */
     clearTokensAndState(state) {
@@ -231,7 +227,7 @@ const authSlice = createSlice({
         state.status = 'succeeded';
         state.accessToken = action.payload.accessToken;
         state.refreshToken = action.payload.refreshToken;
-        saveTokens(action.payload.accessToken, action.payload.refreshToken);
+        setTokens(action.payload.accessToken, action.payload.refreshToken);
       })
       .addCase(login.rejected, failed);
 
@@ -251,7 +247,7 @@ const authSlice = createSlice({
         state.status = 'succeeded';
         state.accessToken = action.payload.accessToken;
         state.refreshToken = action.payload.refreshToken;
-        saveTokens(action.payload.accessToken, action.payload.refreshToken);
+        setTokens(action.payload.accessToken, action.payload.refreshToken);
       })
       .addCase(loginWithOtp.rejected, failed);
 
@@ -262,7 +258,7 @@ const authSlice = createSlice({
         state.status = 'succeeded';
         state.accessToken = action.payload.accessToken;
         state.refreshToken = action.payload.refreshToken;
-        saveTokens(action.payload.accessToken, action.payload.refreshToken);
+        setTokens(action.payload.accessToken, action.payload.refreshToken);
       })
       .addCase(refreshTokens.rejected, (state, action) => {
         failed(state, action);

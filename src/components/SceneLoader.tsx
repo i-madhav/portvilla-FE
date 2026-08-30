@@ -10,8 +10,8 @@ import {
   ORB_START_Y,
   orbEntranceLinearT,
   type OrbEntranceState,
-} from '../lib/constants';
-import { jumpToPageTop }                from '../lib/utils';
+} from '../lib/scene/constants';
+import { jumpToPageTop }                from '../lib/ui/utils';
 import { useImagePreloader }            from '../hooks/useImagePreloader';
 import { useMouseParallax }             from '../hooks/useMouseParallax';
 import { useOrbState }                  from '../hooks/useOrbState';
@@ -40,6 +40,16 @@ const SPACER_HEIGHT: Record<Phase, string> = {
 
 export default function SceneLoader() {
   const { progress, done } = useImagePreloader(IMAGE_SRCS);
+
+  useEffect(() => {
+    document.documentElement.classList.add('pv-camera-landing');
+    document.body.classList.add('pv-camera-landing');
+
+    return () => {
+      document.documentElement.classList.remove('pv-camera-landing');
+      document.body.classList.remove('pv-camera-landing');
+    };
+  }, []);
 
   const [phase,            setPhase           ] = useState<Phase>('loading');
   const [loaderFading,     setLoaderFading    ] = useState(false);

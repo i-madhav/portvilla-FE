@@ -1,4 +1,4 @@
-import { IMAGE_SRCS, LAYER_Y, LAYER_Z } from '../../lib/constants';
+import { IMAGE_SRCS, LAYER_Y, LAYER_Z } from '../../lib/scene/constants';
 import CameraRig               from './CameraRig';
 import LayerMesh               from './LayerMesh';
 
