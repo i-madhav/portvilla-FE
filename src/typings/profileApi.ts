@@ -148,7 +148,43 @@ export interface UpdateIdentityDto {
   availability?: string | null;
 }
 
+/**
+ * Stable identifier the backend mints for every array entry, 8 chars of
+ * `[a-z0-9]`, unique within its own section.
+ *
+ * **Round-trip it on PATCH.** An entry that arrives without a key is treated as
+ * new and is re-keyed, which silently changes the slide ids the voice agent
+ * addresses content by. Editors must carry `key` through untouched — never
+ * rebuild an entry object field by field.
+ */
+export type EntryKey = string;
+
+/**
+ * One stage of a work's arc: discovery → beta → GA → scale.
+ *
+ * `summary` is what the agent says aloud when the stage appears — one breath,
+ * capped at {@link STAGE_SUMMARY_MAX_LENGTH} by the API. `detail` is held back
+ * until a visitor asks to go deeper.
+ */
+export interface StageEntryDto {
+  key?: EntryKey;
+  label: string;
+  status: 'active' | 'completed' | 'in-progress' | 'archived';
+  summary: string;
+  detail: string | null;
+  date: string | null;
+  endDate: string | null;
+  highlights: string[];
+}
+
+/** Mirrors the API's `@MaxLength(200)` on a stage summary. */
+export const STAGE_SUMMARY_MAX_LENGTH = 200;
+
+/** Mirrors the API's `MAX_STAGES_PER_WORK`. */
+export const MAX_STAGES_PER_WORK = 20;
+
 export interface WorkEntryDto {
+  key?: EntryKey;
   type: WorkType;
   name: string;
   tagline: string | null;
@@ -164,9 +200,12 @@ export interface WorkEntryDto {
   featured: boolean;
   codeSnippets: { language: string; code: string; description: string | null }[];
   date: string | null;
+  /** The work's arc, in order. Array order *is* the order — there is no rank field. */
+  stages: StageEntryDto[];
 }
 
 export interface TimelineEntryDto {
+  key?: EntryKey;
   category: TimelineCategory;
   date: string; // "YYYY-MM"
   endDate: string | null;
@@ -179,6 +218,7 @@ export interface TimelineEntryDto {
 }
 
 export interface CapabilityEntryDto {
+  key?: EntryKey;
   name: string;
   description: string | null;
   icon: string | null; // Lucide icon name
@@ -188,6 +228,7 @@ export interface CapabilityEntryDto {
 }
 
 export interface OfferingEntryDto {
+  key?: EntryKey;
   name: string;
   description: string;
   icon: string | null;
@@ -199,6 +240,7 @@ export interface OfferingEntryDto {
 }
 
 export interface MetricEntryDto {
+  key?: EntryKey;
   value: string; // e.g. "5k+"
   label: string; // e.g. "GitHub Stars"
   description: string | null;
@@ -207,6 +249,7 @@ export interface MetricEntryDto {
 }
 
 export interface TestimonialEntryDto {
+  key?: EntryKey;
   text: string;
   author: string;
   role: string | null;
@@ -217,6 +260,7 @@ export interface TestimonialEntryDto {
 }
 
 export interface TeamMemberEntryDto {
+  key?: EntryKey;
   name: string;
   role: string;
   bio: string | null;
@@ -225,6 +269,7 @@ export interface TeamMemberEntryDto {
 }
 
 export interface MediaEntryDto {
+  key?: EntryKey;
   url: string;
   caption: string | null;
   type: 'image' | 'video';
@@ -232,6 +277,7 @@ export interface MediaEntryDto {
 }
 
 export interface ContentEntryDto {
+  key?: EntryKey;
   type: ContentType;
   title: string;
   url: string;

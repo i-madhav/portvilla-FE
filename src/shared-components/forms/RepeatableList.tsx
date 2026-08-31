@@ -12,6 +12,16 @@ interface RepeatableListProps<T> {
   renderItem: (item: T, update: (patch: Partial<T>) => void, index: number) => ReactNode;
   /** Label for each entry's remove button, e.g. "role" → "Remove role". */
   itemNoun?: string;
+  /**
+   * Show move up/down controls.
+   *
+   * Only for lists where array order *is* meaning — a work's stages are an arc,
+   * and the agent walks them in the order stored. Everywhere else, reorder
+   * controls are two more buttons that change nothing.
+   */
+  reorderable?: boolean;
+  /** Hide the add button past this many entries — mirrors an API array cap. */
+  maxItems?: number;
 }
 
 /**
@@ -27,11 +37,22 @@ export function RepeatableList<T>({
   emptyHint,
   renderItem,
   itemNoun = 'entry',
+  reorderable = false,
+  maxItems,
 }: RepeatableListProps<T>) {
+  const canAdd = maxItems === undefined || items.length < maxItems;
   const updateAt = (i: number, patch: Partial<T>) =>
     onChange(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
   const removeAt = (i: number) => onChange(items.filter((_, idx) => idx !== i));
   const add = () => onChange([...items, makeEmpty()]);
+
+  const moveBy = (i: number, delta: number) => {
+    const target = i + delta;
+    if (target < 0 || target >= items.length) return;
+    const next = [...items];
+    [next[i], next[target]] = [next[target], next[i]];
+    onChange(next);
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -53,6 +74,30 @@ export function RepeatableList<T>({
             gap: '0.625rem',
           }}
         >
+          {reorderable && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '0.5rem',
+                right: '3.25rem',
+                display: 'flex',
+                gap: '0.15rem',
+              }}
+            >
+              <MoveButton
+                direction="up"
+                disabled={i === 0}
+                onClick={() => moveBy(i, -1)}
+                label={`Move ${itemNoun} ${i + 1} up`}
+              />
+              <MoveButton
+                direction="down"
+                disabled={i === items.length - 1}
+                onClick={() => moveBy(i, 1)}
+                label={`Move ${itemNoun} ${i + 1} down`}
+              />
+            </div>
+          )}
           <button
             type="button"
             className="pv-focusable"
@@ -90,6 +135,7 @@ export function RepeatableList<T>({
         </div>
       ))}
 
+      {canAdd && (
       <button
         type="button"
         className="pv-focusable"
@@ -117,6 +163,46 @@ export function RepeatableList<T>({
       >
         + {addLabel}
       </button>
+      )}
     </div>
+  );
+}
+
+function MoveButton({
+  direction,
+  disabled,
+  onClick,
+  label,
+}: {
+  direction: 'up' | 'down';
+  disabled: boolean;
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      className="pv-focusable"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '1.5rem',
+        height: '1.5rem',
+        borderRadius: RADIUS.sm,
+        background: 'transparent',
+        border: 'none',
+        color: disabled ? COLORS.borderSubtle : COLORS.textMuted,
+        cursor: disabled ? 'default' : 'pointer',
+        padding: 0,
+        fontSize: '0.7rem',
+        lineHeight: 1,
+      }}
+    >
+      <span aria-hidden="true">{direction === 'up' ? '↑' : '↓'}</span>
+    </button>
   );
 }

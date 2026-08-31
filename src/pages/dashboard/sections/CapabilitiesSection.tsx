@@ -137,6 +137,19 @@ function CapabilitiesEdit({
                   </select>
                 </div>
               ) : null}
+              {entityType === 'individual' ? (
+                <div style={{ flex: 1 }}>
+                  <label style={miniLabel}>Years</label>
+                  <input
+                    aria-label={`Skill ${index + 1} years of experience`}
+                    type="number"
+                    min={0}
+                    value={item.yearsOfExperience ?? ''}
+                    onChange={(e) => update({ yearsOfExperience: e.target.value === '' ? null : Number(e.target.value) })}
+                    style={inputStyle()}
+                  />
+                </div>
+              ) : null}
             </div>
             <div>
               <label style={miniLabel}>Description</label>

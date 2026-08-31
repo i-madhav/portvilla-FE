@@ -20,3 +20,22 @@ export interface SessionResponse {
 export function createGuestSession(options?: RequestOptions): Promise<SessionResponse> {
   return apiClient.post<SessionResponse>('/session', { type: 'guest' }, options);
 }
+
+/**
+ * Opens a LiveKit session for one person's portfolio.
+ *
+ * The backend resolves `profileUsername`, bakes `{ profile_id, profile_username }`
+ * into the token's agent dispatch, and LiveKit routes it to the
+ * `portvilla-portfolio` worker, which fetches that profile's slide catalog on
+ * join. Nothing about the catalog comes back through this call.
+ */
+export function createUserSession(
+  profileUsername: string,
+  options?: RequestOptions,
+): Promise<SessionResponse> {
+  return apiClient.post<SessionResponse>(
+    '/session',
+    { type: 'user', profileUsername },
+    options,
+  );
+}

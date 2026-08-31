@@ -8,15 +8,13 @@ import {
   type RemoteTrackPublication,
 } from 'livekit-client';
 import { createGuestSession } from '@app/lib/api';
+import { UI_COMMAND_TOPIC, parseUiCommand } from '@app/lib/livekit/uiCommands';
+import type { UiCommand, UiCommandType } from '@app/lib/livekit/uiCommands';
 import type { OrbHandle } from './useOrbState';
 
 const LIVEKIT_URL = import.meta.env.VITE_LIVEKIT_URL ?? 'wss://portvilla-crjwmpba.livekit.cloud';
 
-export type UiCommandType = 'SHOW_WAITLIST';
-
-export interface UiCommand {
-  type: UiCommandType;
-}
+export type { UiCommand, UiCommandType };
 
 export interface LiveKitSessionOptions {
   onUiCommand?: (cmd: UiCommand) => void;
@@ -184,9 +182,13 @@ export function useLiveKitSession(
         const text = new TextDecoder().decode(payload);
         console.log('[LiveKit] DataReceived — from:', participant?.identity ?? 'server', '| topic:', topic ?? '(none)', '| kind:', kind, '| body:', text);
 
-        if (topic === 'ui-command') {
+        if (topic === UI_COMMAND_TOPIC) {
+          const cmd = parseUiCommand(text);
+          if (!cmd) {
+            console.warn('[LiveKit] ui-command not understood, ignoring:', text);
+            return;
+          }
           console.log('[LiveKit] ui-command matched → dispatching to handler');
-          const cmd = JSON.parse(text) as UiCommand;
           onUiCommandRef.current?.(cmd);
         }
       } catch (err) {

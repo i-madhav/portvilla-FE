@@ -1,4 +1,4 @@
-import { Navigate, useParams } from 'react-router-dom';
+import { NavLink, Navigate, useParams } from 'react-router-dom';
 import { ROUTES } from '@routes/index';
 
 import { useDashboard } from '../context';
@@ -34,11 +34,32 @@ export function KnowledgeView() {
   }
 
   const entity = entityCopy(profile);
-  const current = knowledgeSections(profile, completeness).find((item) => item.id === section)!;
+  const sections = knowledgeSections(profile, completeness);
+  const current = sections.find((item) => item.id === section)!;
 
   return (
     <div className="pv-dashboard-workspace">
       <PageHeader eyebrow="Agent knowledge" title={current.label} description={current.description} />
+
+      {/* The rail carries this same list, but only from 64rem up. Below that it
+          is an icon-only rail or a tab strip with no room for sub-navigation,
+          which left every section except the default one unreachable. This is
+          hidden again at 64rem so the rail stays the single answer to "where
+          am I" on a wide window. */}
+      <nav className="pv-knowledge-sectionbar" aria-label="Knowledge sections">
+        {sections.map((item) => (
+          <NavLink
+            key={item.id}
+            to={`${ROUTES.KNOWLEDGE}/${item.id}`}
+            className="pv-knowledge-sectionbar-item pv-focusable"
+          >
+            <span>{item.label}</span>
+            {item.needsAttention ? (
+              <span className="pv-subnav-attention" aria-label="Incomplete" title="Incomplete" />
+            ) : null}
+          </NavLink>
+        ))}
+      </nav>
 
       {section === 'identity' ? (
         <div className="pv-entity-notice">

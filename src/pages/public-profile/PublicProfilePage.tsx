@@ -12,6 +12,8 @@ import {
 } from '@shared-components/theme';
 import type { PublicProfileDto } from '@typings/profileApi';
 import { usePublicProfile } from './usePublicProfile';
+import { usePortfolioVoice } from './usePortfolioVoice';
+import { VoiceStage } from './VoiceStage';
 
 const page: React.CSSProperties = {
   background: COLORS.canvas,
@@ -61,7 +63,7 @@ export function PublicProfilePage() {
     return <PasswordGate username={username ?? ''} state={state} onUnlock={unlock} />;
   }
 
-  return <ProfileView profile={state.profile} />;
+  return <ProfileView profile={state.profile} username={username} />;
 }
 
 function Centered({ title, body }: { title: string; body: string }) {
@@ -152,9 +154,10 @@ function PasswordGate({
   );
 }
 
-function ProfileView({ profile }: { profile: PublicProfileDto }) {
+function ProfileView({ profile, username }: { profile: PublicProfileDto; username?: string }) {
   const id = profile.identity;
   const initial = (id.name || profile.username || '?').charAt(0).toUpperCase();
+  const voice = usePortfolioVoice(username ?? profile.username);
 
   return (
     <div style={page}>
@@ -328,8 +331,26 @@ function ProfileView({ profile }: { profile: PublicProfileDto }) {
           </Card>
         )}
 
-        <p style={{ textAlign: 'center', color: COLORS.textMuted, fontSize: '0.75rem', marginTop: '2rem' }}>
-          Ask {profile.agentName} anything · powered by Portvilla
+        {/*
+          Sticky rather than in flow: the agent decides what is on screen, and a
+          slide that appears above the fold while the visitor is reading further
+          down would be shown to nobody.
+        */}
+        <div
+          style={{
+            position: 'sticky',
+            bottom: '1rem',
+            zIndex: 10,
+            marginTop: '2rem',
+            maxHeight: '72vh',
+            overflowY: 'auto',
+          }}
+        >
+          <VoiceStage voice={voice} agentName={profile.agentName} />
+        </div>
+
+        <p style={{ textAlign: 'center', color: COLORS.textMuted, fontSize: '0.75rem', marginTop: '1.5rem' }}>
+          powered by Portvilla
         </p>
       </div>
     </div>

@@ -61,6 +61,7 @@ export interface IdentityStepData {
   bio: string;
   about: string;
   location: string;
+  foundedOrBorn: string;
   industry: string;
   availability: string;
 }
@@ -87,6 +88,7 @@ const INITIAL_DATA: OnboardingData = {
     bio: '',
     about: '',
     location: '',
+    foundedOrBorn: '',
     industry: '',
     availability: '',
   },
@@ -162,6 +164,7 @@ function identityPayload(i: IdentityStepData) {
     bio: orNull(i.bio),
     about: orNull(i.about),
     location: orNull(i.location),
+    foundedOrBorn: orNull(i.foundedOrBorn),
     industry: orNull(i.industry),
     availability: orNull(i.availability),
   };

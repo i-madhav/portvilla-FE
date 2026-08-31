@@ -29,6 +29,6 @@ export { isTokenExpired } from './jwt';
 
 export { publicProfileLabel, publicProfileUrl } from './publicProfile';
 
-export { createGuestSession, type SessionResponse } from './sessionApi';
+export { createGuestSession, createUserSession, type SessionResponse } from './sessionApi';
 
 export { submitWaitlist } from './waitlistApi';
