@@ -4,7 +4,7 @@ import { labelStyle, inputStyle } from '@shared-components/theme';
 import { RepeatableList } from '@shared-components/forms/RepeatableList';
 import { EditableSection } from '../components/EditableSection';
 import { EditActions } from '../components/EditActions';
-import { KeyValue, EmptyText } from '../components/display';
+import { KeyValue } from '../components/display';
 import { COLORS } from '../styles';
 import type { SectionProps } from './types';
 
@@ -15,19 +15,20 @@ const miniLabel = { ...labelStyle, fontSize: '0.68rem', marginBottom: '0.25rem' 
 
 export function SocialSection({ profile, save }: SectionProps) {
   const social = profile.social;
-  const hasAny =
-    social.links.length > 0 || social.email || social.phone || social.calendarUrl;
 
   return (
     <EditableSection
       title="Contact & Links"
       description="How visitors can reach you."
       view={
-        !hasAny ? (
-          <EmptyText>No contact details yet.</EmptyText>
-        ) : (
-          <div>
-            {social.links.map((l, i) => (
+        // Every row shows whether or not it holds a value — the roster is the
+        // point. A blank contact section used to collapse to one line of prose
+        // that named none of the things it could hold.
+        <div>
+          {social.links.length === 0 ? (
+            <KeyValue label="Links" value={null} />
+          ) : (
+            social.links.map((l, i) => (
               <KeyValue
                 key={i}
                 label={l.platform}
@@ -37,12 +38,12 @@ export function SocialSection({ profile, save }: SectionProps) {
                   </a>
                 }
               />
-            ))}
-            <KeyValue label="Email" value={social.email} />
-            <KeyValue label="Phone" value={social.phone} />
-            <KeyValue label="Scheduling" value={social.calendarUrl} />
-          </div>
-        )
+            ))
+          )}
+          <KeyValue label="Email" value={social.email} />
+          <KeyValue label="Phone" value={social.phone} />
+          <KeyValue label="Scheduling" value={social.calendarUrl} />
+        </div>
       }
       edit={({ done }) => <SocialEdit initial={social} save={save} done={done} />}
     />
@@ -103,6 +104,10 @@ function SocialEdit({
             <div style={{ flex: 1.6 }}>
               <label style={miniLabel}>URL</label>
               <input aria-label={`Link ${index + 1} URL`} value={item.url} onChange={(e) => update({ url: e.target.value })} style={inputStyle()} placeholder="https://…" />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={miniLabel}>Display label</label>
+              <input aria-label={`Link ${index + 1} display label`} value={item.label ?? ''} onChange={(e) => update({ label: e.target.value || null })} style={inputStyle()} placeholder="Optional" />
             </div>
           </div>
         )}

@@ -15,6 +15,7 @@ const ENTITY_LABELS: Record<EntityType, string> = {
 
 const miniLabel = { ...labelStyle, fontSize: '0.7rem', marginTop: '0.75rem' };
 const orNull = (s: string) => (s.trim() ? s.trim() : null);
+const foundedOrBornLabel = (type: EntityType) => (type === 'individual' ? 'Born' : 'Founded');
 
 export function IdentitySection({ profile, save }: SectionProps) {
   const id = profile.identity;
@@ -31,6 +32,7 @@ export function IdentitySection({ profile, save }: SectionProps) {
           <KeyValue label="Bio" value={id.bio} />
           <KeyValue label="About" value={id.about} />
           <KeyValue label="Location" value={id.location} />
+          <KeyValue label={foundedOrBornLabel(id.entityType)} value={id.foundedOrBorn} />
           <KeyValue label="Industry" value={id.industry} />
           <KeyValue label="Availability" value={id.availability} />
         </div>
@@ -55,6 +57,7 @@ function IdentityEdit({
   const [bio, setBio] = useState(id.bio ?? '');
   const [about, setAbout] = useState(id.about ?? '');
   const [location, setLocation] = useState(id.location ?? '');
+  const [foundedOrBorn, setFoundedOrBorn] = useState(id.foundedOrBorn ?? '');
   const [industry, setIndustry] = useState(id.industry ?? '');
   const [availability, setAvailability] = useState(id.availability ?? '');
   const [saving, setSaving] = useState(false);
@@ -72,6 +75,7 @@ function IdentityEdit({
           bio: orNull(bio),
           about: orNull(about),
           location: orNull(location),
+          foundedOrBorn: orNull(foundedOrBorn),
           industry: orNull(industry),
           availability: orNull(availability),
         },
@@ -117,6 +121,9 @@ function IdentityEdit({
           <input aria-label="Industry" value={industry} onChange={(e) => setIndustry(e.target.value)} style={inputStyle()} />
         </div>
       </div>
+
+      <label style={miniLabel}>{foundedOrBornLabel(entityType)}</label>
+      <input aria-label={foundedOrBornLabel(entityType)} value={foundedOrBorn} onChange={(e) => setFoundedOrBorn(e.target.value)} style={inputStyle()} placeholder="2019" />
 
       <label style={miniLabel}>Availability</label>
       <input aria-label="Availability" value={availability} onChange={(e) => setAvailability(e.target.value)} style={inputStyle()} />

@@ -63,7 +63,8 @@ export function IdentityStep({ initial, onContinue, busy }: IdentityStepProps) {
   // Seven fields at once read as a wall. Only `name` is actually required, so
   // the rest of the long tail stays folded until asked for.
   const [expanded, setExpanded] = useState(
-    () => !!(initial.about || initial.location || initial.industry || initial.availability),
+    () =>
+      !!(initial.about || initial.location || initial.foundedOrBorn || initial.industry || initial.availability),
   );
 
   const set = <K extends keyof IdentityStepData>(key: K, value: IdentityStepData[K]) =>
@@ -200,6 +201,19 @@ export function IdentityStep({ initial, onContinue, busy }: IdentityStepProps) {
                   onChange={(e) => set('industry', e.target.value)}
                   style={inputStyle()}
                   placeholder="Fintech"
+                />
+              </Field>
+            </div>
+            <div style={{ flex: '1 1 10rem', minWidth: 0 }}>
+              <Field label={isIndividual ? 'Born' : 'Founded'} htmlFor="pv-founded" optional>
+                <input
+                  id="pv-founded"
+                  className="pv-field"
+                  type="text"
+                  value={data.foundedOrBorn}
+                  onChange={(e) => set('foundedOrBorn', e.target.value)}
+                  style={inputStyle()}
+                  placeholder="2019"
                 />
               </Field>
             </div>

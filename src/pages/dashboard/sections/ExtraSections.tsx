@@ -26,6 +26,16 @@ interface ExtraSectionsProps extends SectionProps {
 
 const miniLabel = { ...labelStyle, fontSize: '0.68rem', marginBottom: '0.25rem' };
 const fieldPair = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(10rem, 1fr))', gap: '0.6rem' };
+const checkboxLabel = { ...miniLabel, display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: 0, whiteSpace: 'nowrap' as const };
+
+const RELATIONSHIP_OPTIONS: { value: TestimonialRelationship; label: string }[] = [
+  { value: Relationship.Colleague, label: 'Colleague' },
+  { value: Relationship.Manager, label: 'Manager' },
+  { value: Relationship.Client, label: 'Client' },
+  { value: Relationship.User, label: 'User' },
+  { value: Relationship.Investor, label: 'Investor' },
+  { value: Relationship.Other, label: 'Other' },
+];
 
 /** Less common schema sections stay editable here, but the parent controls
  * which ones make sense for the selected entity type. */
@@ -66,6 +76,15 @@ function OfferingsCard({ profile, save }: SectionProps) {
               </div>
               <Field label="Description"><textarea aria-label={`Offering ${i + 1} description`} value={item.description} onChange={(e) => update({ description: e.target.value })} style={textareaStyle()} rows={2} /></Field>
               <Field label="Features"><input aria-label={`Offering ${i + 1} features`} value={arrayToCsv(item.features)} onChange={(e) => update({ features: csvToArray(e.target.value) })} style={inputStyle()} placeholder="Comma-separated" /></Field>
+              <Field label="Tags"><input aria-label={`Offering ${i + 1} tags`} value={arrayToCsv(item.tags)} onChange={(e) => update({ tags: csvToArray(e.target.value) })} style={inputStyle()} placeholder="Comma-separated" /></Field>
+              <div style={fieldPair}>
+                <Field label="CTA label"><input aria-label={`Offering ${i + 1} CTA label`} value={item.cta?.label ?? ''} onChange={(e) => update({ cta: e.target.value ? { label: e.target.value, url: item.cta?.url ?? '' } : null })} style={inputStyle()} placeholder="Get started" /></Field>
+                <Field label="CTA link"><input aria-label={`Offering ${i + 1} CTA link`} value={item.cta?.url ?? ''} onChange={(e) => update({ cta: item.cta?.label ? { label: item.cta.label, url: e.target.value } : item.cta }) } style={inputStyle()} placeholder="https://…" disabled={!item.cta?.label} /></Field>
+              </div>
+              <label style={checkboxLabel}>
+                <input aria-label={`Offering ${i + 1} highlighted`} type="checkbox" checked={item.highlighted} onChange={(e) => update({ highlighted: e.target.checked })} />
+                Highlighted
+              </label>
             </>
           )}
         />
@@ -88,7 +107,10 @@ function MetricsCard({ profile, save }: SectionProps) {
               <Field label="Value"><input aria-label={`Metric ${i + 1} value`} value={item.value} onChange={(e) => update({ value: e.target.value })} style={inputStyle()} placeholder="e.g. 5k+" /></Field>
               <Field label="Label"><input aria-label={`Metric ${i + 1} label`} value={item.label} onChange={(e) => update({ label: e.target.value })} style={inputStyle()} placeholder="e.g. Active users" /></Field>
             </div>
-            <Field label="Context"><input aria-label={`Metric ${i + 1} description`} value={item.description ?? ''} onChange={(e) => update({ description: e.target.value || null })} style={inputStyle()} /></Field>
+            <div style={fieldPair}>
+              <Field label="Context"><input aria-label={`Metric ${i + 1} description`} value={item.description ?? ''} onChange={(e) => update({ description: e.target.value || null })} style={inputStyle()} /></Field>
+              <Field label="Category"><input aria-label={`Metric ${i + 1} category`} value={item.category ?? ''} onChange={(e) => update({ category: e.target.value || null })} style={inputStyle()} /></Field>
+            </div>
           </>
         )} />
       )}
@@ -109,8 +131,22 @@ function TestimonialsCard({ profile, save }: SectionProps) {
             <Field label="Quote"><textarea aria-label={`Testimonial ${i + 1} quote`} value={item.text} onChange={(e) => update({ text: e.target.value })} style={textareaStyle()} rows={3} /></Field>
             <div style={fieldPair}>
               <Field label="Author"><input aria-label={`Testimonial ${i + 1} author`} value={item.author} onChange={(e) => update({ author: e.target.value })} style={inputStyle()} /></Field>
-              <Field label="Organization"><input aria-label={`Testimonial ${i + 1} organization`} value={item.organization ?? ''} onChange={(e) => update({ organization: e.target.value || null })} style={inputStyle()} /></Field>
+              <Field label="Role"><input aria-label={`Testimonial ${i + 1} role`} value={item.role ?? ''} onChange={(e) => update({ role: e.target.value || null })} style={inputStyle()} /></Field>
             </div>
+            <div style={fieldPair}>
+              <Field label="Organization"><input aria-label={`Testimonial ${i + 1} organization`} value={item.organization ?? ''} onChange={(e) => update({ organization: e.target.value || null })} style={inputStyle()} /></Field>
+              <Field label="Relationship">
+                <select aria-label={`Testimonial ${i + 1} relationship`} value={item.relationship} onChange={(e) => update({ relationship: e.target.value as TestimonialRelationship })} style={selectStyle()}>
+                  {RELATIONSHIP_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </Field>
+            </div>
+            <label style={checkboxLabel}>
+              <input aria-label={`Testimonial ${i + 1} featured`} type="checkbox" checked={item.featured} onChange={(e) => update({ featured: e.target.checked })} />
+              Featured
+            </label>
           </>
         )} />
       )}
@@ -133,6 +169,26 @@ function TeamCard({ profile, save }: SectionProps) {
               <Field label="Role"><input aria-label={`Team member ${i + 1} role`} value={item.role} onChange={(e) => update({ role: e.target.value })} style={inputStyle()} /></Field>
             </div>
             <Field label="Bio"><textarea aria-label={`Team member ${i + 1} bio`} value={item.bio ?? ''} onChange={(e) => update({ bio: e.target.value || null })} style={textareaStyle()} rows={2} /></Field>
+            <label style={miniLabel}>Links</label>
+            <RepeatableList
+              items={item.links}
+              onChange={(links) => update({ links })}
+              makeEmpty={() => ({ platform: '', url: '' })}
+              addLabel="Add a link"
+              emptyHint="No links yet."
+              renderItem={(link, updateLink, li) => (
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={miniLabel}>Platform</label>
+                    <input aria-label={`Team member ${i + 1} link ${li + 1} platform`} value={link.platform} onChange={(e) => updateLink({ platform: e.target.value })} style={inputStyle()} />
+                  </div>
+                  <div style={{ flex: 1.6 }}>
+                    <label style={miniLabel}>URL</label>
+                    <input aria-label={`Team member ${i + 1} link ${li + 1} URL`} value={link.url} onChange={(e) => updateLink({ url: e.target.value })} style={inputStyle()} placeholder="https://…" />
+                  </div>
+                </div>
+              )}
+            />
           </>
         )} />
       )}
@@ -156,6 +212,14 @@ function ContentCard({ profile, save }: SectionProps) {
             </div>
             <Field label="URL"><input type="url" aria-label={`Content ${i + 1} URL`} value={item.url} onChange={(e) => update({ url: e.target.value })} style={inputStyle()} placeholder="https://…" /></Field>
             <Field label="Description"><textarea aria-label={`Content ${i + 1} description`} value={item.description ?? ''} onChange={(e) => update({ description: e.target.value || null })} style={textareaStyle()} rows={2} /></Field>
+            <div style={fieldPair}>
+              <Field label="Date"><input aria-label={`Content ${i + 1} date`} type="month" value={item.date ?? ''} onChange={(e) => update({ date: e.target.value || null })} style={inputStyle()} /></Field>
+              <Field label="Tags"><input aria-label={`Content ${i + 1} tags`} value={arrayToCsv(item.tags)} onChange={(e) => update({ tags: csvToArray(e.target.value) })} style={inputStyle()} placeholder="Comma-separated" /></Field>
+            </div>
+            <label style={checkboxLabel}>
+              <input aria-label={`Content ${i + 1} featured`} type="checkbox" checked={item.featured} onChange={(e) => update({ featured: e.target.checked })} />
+              Featured
+            </label>
           </>
         )} />
       )}

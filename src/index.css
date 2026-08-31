@@ -276,8 +276,19 @@ body.pv-camera-landing::-webkit-scrollbar-thumb {
 .pv-sidebar-brand,
 .pv-sidebar-status,
 .pv-sidebar-account,
-.pv-sidebar-spacer {
+.pv-sidebar-spacer,
+.pv-sidebar-subnav {
   display: none;
+}
+
+/* Mobile-first: the rail is a horizontal tab strip, so the group wrapper is
+   dissolved and its NavLink becomes a direct flex child of the strip. The
+   48rem rule re-establishes it as a column so a workspace can carry its
+   sub-navigation. Both of these lived at the end of the file and therefore
+   beat the media queries they were meant to be overridden by — which hid the
+   knowledge sub-navigation at every width. */
+.pv-sidebar-nav-group {
+  display: contents;
 }
 
 .pv-sidebar-nav {
@@ -352,6 +363,55 @@ body.pv-camera-landing::-webkit-scrollbar-thumb {
   border: 2px solid white;
   border-radius: 999px;
   background: theme('colors.violet.DEFAULT');
+}
+
+.pv-subnav-attention {
+  width: .38rem;
+  height: .38rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: theme('colors.violet.DEFAULT');
+}
+
+/* In-page section switcher. Stands in for the rail's sub-navigation on any
+   window too narrow to show it, and is hidden again at 64rem. */
+.pv-knowledge-sectionbar {
+  display: flex;
+  gap: .3rem;
+  overflow-x: auto;
+  margin-bottom: .25rem;
+  padding-bottom: .25rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.pv-knowledge-sectionbar-item {
+  display: inline-flex;
+  min-height: 2.75rem;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: .4rem;
+  padding: .4rem .85rem;
+  border: 1px solid theme('colors.ink.8');
+  border-radius: 999px;
+  background: rgba(255,255,255,.7);
+  color: theme('colors.ink.45');
+  font-size: .76rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.pv-knowledge-sectionbar-item:hover { color: theme('colors.ink.DEFAULT'); }
+
+.pv-knowledge-sectionbar-item[aria-current='page'] {
+  border-color: theme('colors.ink.DEFAULT');
+  background: theme('colors.paper.raised');
+  color: theme('colors.ink.DEFAULT');
+  font-weight: 650;
+}
+
+@media (min-width: 64rem) {
+  .pv-knowledge-sectionbar { display: none; }
 }
 
 /* Workspace framing. */
@@ -978,14 +1038,6 @@ body.pv-camera-landing::-webkit-scrollbar-thumb {
     color: theme('colors.ink.DEFAULT');
     font-weight: 650;
   }
-
-  .pv-subnav-attention {
-    width: .38rem;
-    height: .38rem;
-    flex: 0 0 auto;
-    border-radius: 999px;
-    background: theme('colors.violet.DEFAULT');
-  }
 }
 
 @media (min-width: 48rem) and (max-width: 63.999rem) {
@@ -1003,10 +1055,6 @@ body.pv-camera-landing::-webkit-scrollbar-thumb {
   .pv-sidebar-profile { justify-content: center; padding: .35rem 0; }
   .pv-sidebar-logout { text-align: center; font-size: .6rem; }
 }
-
-.pv-sidebar-nav-group { display: contents; }
-
-.pv-sidebar-subnav { display: none; }
 
 /* Blocking dialogs (unsaved-changes guard). */
 .pv-dialog-scrim {

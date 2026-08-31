@@ -32,6 +32,7 @@ const makeEmpty = (): WorkEntryDto => ({
   featured: false,
   codeSnippets: [],
   date: null,
+  stages: [],
 });
 
 const TYPE_OPTIONS: { value: WorkType; label: string }[] = Object.values(WorkTypeEnum).map((v) => ({

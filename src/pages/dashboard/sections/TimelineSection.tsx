@@ -174,6 +174,27 @@ function TimelineEdit({
                 rows={2}
               />
             </div>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
+              <div style={{ flex: 1 }}>
+                <label style={miniLabel}>Link</label>
+                <input
+                  aria-label={`Experience ${index + 1} link`}
+                  value={item.url ?? ''}
+                  onChange={(e) => update({ url: e.target.value || null })}
+                  style={inputStyle()}
+                  placeholder="https://…"
+                />
+              </div>
+              <label style={{ ...miniLabel, display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.875rem', whiteSpace: 'nowrap' }}>
+                <input
+                  aria-label={`Experience ${index + 1} highlight`}
+                  type="checkbox"
+                  checked={item.highlight}
+                  onChange={(e) => update({ highlight: e.target.checked })}
+                />
+                Highlight
+              </label>
+            </div>
           </>
         )}
       />
